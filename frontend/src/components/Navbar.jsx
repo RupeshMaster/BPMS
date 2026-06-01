@@ -1,0 +1,121 @@
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useToast } from './Toast';
+
+export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { showToast } = useToast();
+  const [lang, setLang] = useState('English');
+
+  const handleLanguageToggle = () => {
+    const nextLang = lang === 'English' ? 'हिन्दी (Hindi)' : 'English';
+    setLang(nextLang);
+    showToast(`Language switched to ${nextLang}`);
+  };
+
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
+  return (
+    <nav className="navbar flex items-center justify-between h-[5.375rem] w-full border-b border-black bg-white px-6 md:px-10 relative z-40">
+      <div className="flex items-center gap-6">
+        {/* Hamburger Menu Toggler (Mobile/Tablet only) */}
+        {userSession && (
+          <button 
+            onClick={onToggleSidebar}
+            className="lg:hidden flex items-center justify-center p-2 rounded-md hover:bg-slate-100 border border-slate-200 cursor-pointer"
+            style={{ width: '2.5rem', height: '2.5rem', backgroundColor: 'transparent' }}
+            title={isSidebarOpen ? "Close menu" : "Open menu"}
+          >
+            <svg 
+              className="w-6 h-6 stroke-slate-800" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2"
+              style={{ width: '2rem', height: '2rem' }}
+            >
+              {isSidebarOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        )}
+        
+        {/* Logo and Brand */}
+        <div 
+          className="logo-container" 
+          onClick={() => navigate('/')} 
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem' }}
+        >
+          <div 
+            className="bp-logo-wrapper" 
+            style={{ 
+              width: '2.75rem', 
+              height: '2.75rem', 
+              borderRadius: '50%',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fff',
+              boxShadow: '0 2px 0.3125rem rgba(0,0,0,0.1)'
+            }}
+          >
+            <img 
+              src="/assets/logo.png" 
+              alt="BP Logo" 
+              className="bp-logo-img"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+            />
+          </div>
+          <div 
+            className="logo-text text-base sm:text-xl font-bold" 
+            style={{ fontWeight: 800, color: 'var(--bp-navy)', letterSpacing: '1px' }}
+          >
+            <span className="hidden sm:inline">Bharat Petroleum</span>
+            <span className="sm:hidden inline">BPCL</span>
+          </div>
+        </div>
+      </div>
+      
+      <div className="navbar-right flex items-center gap-6 md:gap-10">
+        <div className="language-selector flex items-center gap-2 cursor-pointer text-[1rem] sm:text-base" onClick={handleLanguageToggle}>
+          <span>{lang === 'English' ? 'EN' : 'HI'}</span>
+          <svg className="dropdown-icon" viewBox="0 0 24 24" style={{ width: '0.75rem', height: '0.75rem' }}><path d="M7 10l5 5 5-5z"/></svg>
+        </div>
+
+        {/* Auth status or controls */}
+        {!userSession && !isAuthPage && (
+          <div className="flex gap-2 sm:gap-6">
+            <button 
+              onClick={() => navigate('/login')} 
+              className="btn-primary w-[5rem] sm:w-[7.5rem] h-[2.25rem] sm:h-[2.5rem] text-[0.875rem] sm:text-base font-medium" 
+              style={{ 
+                backgroundColor: 'transparent', 
+                border: '2px solid var(--bp-blue)', 
+                color: 'var(--bp-blue)', 
+                borderRadius: '0.75rem',
+                cursor: 'pointer'
+              }}
+            >
+              Log In
+            </button>
+            <button 
+              onClick={() => navigate('/register')} 
+              className="btn-primary w-[5rem] sm:w-[7.5rem] h-[2.25rem] sm:h-[2.5rem] text-[0.875rem] sm:text-base font-medium"
+              style={{
+                borderRadius: '0.75rem',
+                cursor: 'pointer'
+              }}
+            >
+              Register
+            </button>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
