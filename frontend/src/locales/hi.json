@@ -1,0 +1,18 @@
+{
+  "dashboard": "डैशबोर्ड",
+  "fuel_management": "ईंधन प्रबंधन",
+  "nozzle_management": "नोजल प्रबंधन",
+  "workers": "कर्मचारी",
+  "daily_entries": "दैनिक प्रविष्टियाँ",
+  "shifts": "शिफ्ट",
+  "expenses": "खर्च",
+  "generator": "जेनरेटर",
+  "sales_analysis": "बिक्री विश्लेषण",
+  "reports": "रिपोर्ट",
+  "settings": "सेटिंग्स",
+  "check_in": "चेक इन",
+  "my_attendance": "मेरी उपस्थिति",
+  "sales_entry": "बिक्री प्रविष्टि",
+  "logout": "लॉग आउट",
+  "welcome": "स्वागत है"
+}

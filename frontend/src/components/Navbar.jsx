@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useToast } from './Toast';
 
 export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { showToast } = useToast();
-  const [lang, setLang] = useState('English');
+  const { i18n } = useTranslation();
 
   const handleLanguageToggle = () => {
-    const nextLang = lang === 'English' ? 'हिन्दी (Hindi)' : 'English';
-    setLang(nextLang);
-    showToast(`Language switched to ${nextLang}`);
+    const nextLang = i18n.language === 'en' ? 'hi' : 'en';
+    i18n.changeLanguage(nextLang);
+    showToast(`Language switched to ${nextLang === 'en' ? 'English' : 'हिन्दी (Hindi)'}`);
   };
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
@@ -81,7 +82,7 @@ export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }
       
       <div className="navbar-right flex items-center gap-6 md:gap-10">
         <div className="language-selector" onClick={handleLanguageToggle}>
-          <span>{lang === 'English' ? 'EN' : 'HI'}</span>
+          <span>{i18n.language === 'en' ? 'EN' : 'HI'}</span>
           <svg className="dropdown-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
         </div>
 

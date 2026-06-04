@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { Sidebar } from '../components/Sidebar';
 import { useToast } from '../components/Toast';
+import { formatDate } from '../utils/formatDate';
 import api from '../utils/api';
 import { 
   fetchInitialData,
@@ -26,7 +27,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [weather, setWeather] = useState(null);
+
 
   // Redux Selectors
   const sales = useSelector((state) => state.data.sales);
@@ -65,23 +66,9 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
   const [reportSearch, setReportSearch] = useState('');
   const [reportFilterFuel, setReportFilterFuel] = useState('All');
 
-  // Load weather & backend data on mount
+  // Load backend data on mount
   useEffect(() => {
     dispatch(fetchInitialData());
-
-    axios.get('https://api.open-meteo.com/v1/forecast', {
-      params: {
-        latitude: 27.4924,
-        longitude: 77.6737,
-        current_weather: true
-      }
-    }).then(res => {
-      if (res.data?.current_weather) {
-        setWeather(res.data.current_weather);
-      }
-    }).catch(err => {
-      console.warn('Weather forecast failed', err);
-    });
   }, [dispatch]);
 
   // Initialize form default values
@@ -681,9 +668,9 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
             </div>
           </div>
 
-          <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
+          <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem', alignSelf: 'start' }}>
             <div className="panel-title">Allocate Nozzle Duty</div>
-            <form onSubmit={handleAllocateNozzle} style={{ display: 'flex', flexDirection: 'column', gap: '0.9375rem' }}>
+            <form onSubmit={handleAllocateNozzle} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Select Nozzle</label>
                 <select 
@@ -785,7 +772,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
             </div>
           </div>
 
-          <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
+          <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem', alignSelf: 'start' }}>
             <div className="panel-title">Add Worker Account</div>
             <form onSubmit={handleAddWorker} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input 
@@ -867,7 +854,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                     const netColor = net >= 0 ? 'var(--status-green-dark)' : 'var(--status-red-dark)';
                     return (
                       <tr key={date} style={{ borderBottom: '1px solid var(--border-gray)' }}>
-                        <td style={{ padding: '1rem 1.25rem', fontWeight: 700 }}>{date}</td>
+                        <td style={{ padding: '1rem 1.25rem', fontWeight: 700 }}>{formatDate(date)}</td>
                         <td style={{ padding: '1rem 1.25rem' }}>{data.petrol.toFixed(1)} L</td>
                         <td style={{ padding: '1rem 1.25rem' }}>{data.diesel.toFixed(1)} L</td>
                         <td style={{ padding: '1rem 1.25rem', color: 'var(--status-red-dark)' }}>₹{data.expenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
@@ -995,7 +982,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                   ) : (
                     expenses.slice().reverse().map((exp) => (
                       <tr key={exp.id || exp._id} style={{ borderBottom: '1px solid var(--border-gray)' }}>
-                        <td style={{ padding: '0.75rem' }}>{exp.date}</td>
+                        <td style={{ padding: '0.75rem' }}>{formatDate(exp.date)}</td>
                         <td style={{ padding: '0.75rem', fontWeight: 700 }}>{exp.category}</td>
                         <td style={{ padding: '0.75rem', color: 'var(--text-gray)' }}>{exp.description}</td>
                         <td style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--status-red-dark)' }}>- ₹{exp.amount.toLocaleString()}</td>
@@ -1281,7 +1268,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                 ) : (
                   filteredSales.slice().reverse().map((s) => {
                     const timeFormatted = new Date(s.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    const dateFormatted = new Date(s.date).toISOString().split('T')[0];
+                    const dateFormatted = formatDate(s.date);
                     return (
                       <tr key={s.id || s._id} style={{ borderBottom: '1px solid var(--border-gray)' }}>
                         <td style={{ padding: '0.625rem', fontWeight: 700 }}>{(s.id || s._id).toString().slice(-6)}</td>
@@ -1390,11 +1377,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
               {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'AD'}
             </div>
             Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem' }}>{userSession?.name}</span>
-            {weather && (
-              <span className="ml-4 text-base bg-blue-50 text-blue-800 py-1.5 px-3 rounded-full border border-blue-200 font-semibold flex items-center gap-1.5 shadow-sm">
-                ☀️ Mathura Station: {weather.temperature}°C
-              </span>
-            )}
+
           </div>
           
           <button 

@@ -5,7 +5,8 @@ const expenseSchema = new mongoose.Schema({
   category: { type: String, required: true },
   amount: { type: Number, required: true },
   description: { type: String },
-  date: { type: String, required: true }
+  date: { type: String, required: true },
+  addedBy: { type: String }
 }, { timestamps: true });
 
 export default mongoose.models.Expense || mongoose.model('Expense', expenseSchema);

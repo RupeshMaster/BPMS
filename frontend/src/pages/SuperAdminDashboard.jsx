@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
+
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { Sidebar } from '../components/Sidebar';
 import { useToast } from '../components/Toast';
+import { formatDate } from '../utils/formatDate';
 import api from '../utils/api';
 import { 
   fetchInitialData,
@@ -26,7 +27,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [weather, setWeather] = useState(null);
+
 
   // Redux Selectors
   const sales = useSelector((state) => state.data.sales);
@@ -65,23 +66,9 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
   const [reportSearch, setReportSearch] = useState('');
   const [reportFilterFuel, setReportFilterFuel] = useState('All');
 
-  // Load weather & backend data on mount
+  // Load backend data on mount
   useEffect(() => {
     dispatch(fetchInitialData());
-
-    axios.get('https://api.open-meteo.com/v1/forecast', {
-      params: {
-        latitude: 27.4924,
-        longitude: 77.6737,
-        current_weather: true
-      }
-    }).then(res => {
-      if (res.data?.current_weather) {
-        setWeather(res.data.current_weather);
-      }
-    }).catch(err => {
-      console.warn('Weather forecast failed', err);
-    });
   }, [dispatch]);
 
   // Initialize form default values
@@ -584,49 +571,14 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
             <div className="panel-title">Refill Fuel Stock</div>
-            <form onSubmit={handleRefillSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9375rem' }}>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Select Fuel Type</label>
-                <select 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  value={refillType}
-                  onChange={(e) => setRefillType(e.target.value)}
-                  required
-                >
-                  <option value="Petrol">Petrol</option>
-                  <option value="Diesel">Diesel</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Quantity (Liters)</label>
-                <input 
-                  type="number" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="Enter liters" 
-                  min="1" 
-                  value={refillLiters}
-                  onChange={(e) => setRefillLiters(e.target.value)}
-                  required 
-                />
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Cost per Liter (INR)</label>
-                <input 
-                  type="number" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="Cost per Liter" 
-                  min="1" 
-                  step="0.01" 
-                  value={refillCost}
-                  onChange={(e) => setRefillCost(e.target.value)}
-                  required 
-                />
-              </div>
-              <button type="submit" className="btn-primary auth-btn w-full h-12 mt-[0.625rem] text-xl font-bold">Log Tank Refill</button>
-            </form>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', color: 'var(--text-gray)', textAlign: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <p className="text-lg">Read-Only Mode</p>
+              <p className="text-sm">Tank refill logging is restricted to Admins.</p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -683,38 +635,14 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
             <div className="panel-title">Allocate Nozzle Duty</div>
-            <form onSubmit={handleAllocateNozzle} style={{ display: 'flex', flexDirection: 'column', gap: '0.9375rem' }}>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Select Nozzle</label>
-                <select 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  value={allocateNozzleId}
-                  onChange={(e) => setAllocateNozzleId(e.target.value)}
-                  required
-                >
-                  <option value="A">Nozzle A (Petrol)</option>
-                  <option value="B">Nozzle B (Diesel)</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Assign Worker</label>
-                <select 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  value={allocateWorkerId}
-                  onChange={(e) => setAllocateWorkerId(e.target.value)}
-                  required
-                >
-                  {workersList.map((key) => (
-                    <option key={key} value={users[key].id}>
-                      {users[key].name} ({users[key].id})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" className="btn-primary auth-btn w-full h-12 mt-[0.625rem] text-xl font-bold">Assign Duty</button>
-            </form>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', color: 'var(--text-gray)', textAlign: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <p className="text-lg">Read-Only Mode</p>
+              <p className="text-sm">Nozzle assignments are managed by Admins.</p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -867,7 +795,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                     const netColor = net >= 0 ? 'var(--status-green-dark)' : 'var(--status-red-dark)';
                     return (
                       <tr key={date} style={{ borderBottom: '1px solid var(--border-gray)' }}>
-                        <td style={{ padding: '1rem 1.25rem', fontWeight: 700 }}>{date}</td>
+                        <td style={{ padding: '1rem 1.25rem', fontWeight: 700 }}>{formatDate(date)}</td>
                         <td style={{ padding: '1rem 1.25rem' }}>{data.petrol.toFixed(1)} L</td>
                         <td style={{ padding: '1rem 1.25rem' }}>{data.diesel.toFixed(1)} L</td>
                         <td style={{ padding: '1rem 1.25rem', color: 'var(--status-red-dark)' }}>₹{data.expenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
@@ -920,46 +848,14 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
             <div className="panel-title">Create Shift Log</div>
-            <form onSubmit={handleAddShift} style={{ display: 'flex', flexDirection: 'column', gap: '0.9375rem' }}>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Shift Name</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="e.g. Evening Shift" 
-                  value={newShiftName}
-                  onChange={(e) => setNewShiftName(e.target.value)}
-                  required 
-                />
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Timing Duration</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="e.g. 12:00 PM - 6:00 PM" 
-                  value={newShiftTime}
-                  onChange={(e) => setNewShiftTime(e.target.value)}
-                  required 
-                />
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Allocated Workers</label>
-                <input 
-                  type="number" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="Workers Count" 
-                  min="1" 
-                  value={newShiftWorkers}
-                  onChange={(e) => setNewShiftWorkers(e.target.value)}
-                  required 
-                />
-              </div>
-              <button type="submit" className="btn-primary auth-btn w-full h-12 text-xl font-bold mt-[0.625rem]">Save Shift</button>
-            </form>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', color: 'var(--text-gray)', textAlign: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <p className="text-lg">Read-Only Mode</p>
+              <p className="text-sm">Shift management is restricted to Admins.</p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -995,7 +891,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                   ) : (
                     expenses.slice().reverse().map((exp) => (
                       <tr key={exp.id || exp._id} style={{ borderBottom: '1px solid var(--border-gray)' }}>
-                        <td style={{ padding: '0.75rem' }}>{exp.date}</td>
+                        <td style={{ padding: '0.75rem' }}>{formatDate(exp.date)}</td>
                         <td style={{ padding: '0.75rem', fontWeight: 700 }}>{exp.category}</td>
                         <td style={{ padding: '0.75rem', color: 'var(--text-gray)' }}>{exp.description}</td>
                         <td style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--status-red-dark)' }}>- ₹{exp.amount.toLocaleString()}</td>
@@ -1009,49 +905,14 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
             <div className="panel-title">Log Daily Expense</div>
-            <form onSubmit={handleAddExpense} style={{ display: 'flex', flexDirection: 'column', gap: '0.9375rem' }}>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Category</label>
-                <select 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  value={expenseCategory}
-                  onChange={(e) => setExpenseCategory(e.target.value)}
-                  required
-                >
-                  <option value="Generator Fuel">Generator Fuel</option>
-                  <option value="Electricity Bill">Electricity Bill</option>
-                  <option value="Station Maintenance">Station Maintenance</option>
-                  <option value="Worker Salaries">Worker Salaries</option>
-                  <option value="Other Misc">Other Misc</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Amount (INR)</label>
-                <input 
-                  type="number" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="Enter amount" 
-                  min="1" 
-                  value={expenseAmount}
-                  onChange={(e) => setExpenseAmount(e.target.value)}
-                  required 
-                />
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Description</label>
-                <textarea 
-                  className="input-field" 
-                  style={{ width: '100%', height: '6.875rem', marginBottom: 0, resize: 'none', paddingTop: '0.9375rem' }} 
-                  placeholder="Details..." 
-                  value={expenseDesc}
-                  onChange={(e) => setExpenseDesc(e.target.value)}
-                  required
-                ></textarea>
-              </div>
-              <button type="submit" className="btn-primary auth-btn w-full h-12 text-xl font-bold mt-[0.625rem]">Submit Expense</button>
-            </form>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', color: 'var(--text-gray)', textAlign: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <p className="text-lg">Read-Only Mode</p>
+              <p className="text-sm">Expense management is restricted to Admins.</p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -1114,36 +975,14 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
             <div className="panel-title">Log Generator Run / Refuel</div>
-            <form onSubmit={handleGeneratorLog} style={{ display: 'flex', flexDirection: 'column', gap: '0.9375rem' }}>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Action Log</label>
-                <select 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  value={genLogType}
-                  onChange={(e) => setGenLogType(e.target.value)}
-                  required
-                >
-                  <option value="refuel">Refuel Diesel Tank</option>
-                  <option value="runtime">Log Run Time Hours</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Value (Hours or Liters)</label>
-                <input 
-                  type="number" 
-                  className="input-field" 
-                  style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  placeholder="Liters or Hours" 
-                  min="0.1" 
-                  step="0.01" 
-                  value={genLogVal}
-                  onChange={(e) => setGenLogVal(e.target.value)}
-                  required 
-                />
-              </div>
-              <button type="submit" className="btn-primary auth-btn w-full h-12 text-xl font-bold mt-[0.625rem]">Log Event</button>
-            </form>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '1rem', color: 'var(--text-gray)', textAlign: 'center' }}>
+              <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <p className="text-lg">Read-Only Mode</p>
+              <p className="text-sm">Generator logging is restricted to Admins.</p>
+            </div>
           </div>
         </div>
       </motion.div>
@@ -1280,7 +1119,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                 ) : (
                   filteredSales.slice().reverse().map((s) => {
                     const timeFormatted = new Date(s.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    const dateFormatted = new Date(s.date).toISOString().split('T')[0];
+                    const dateFormatted = formatDate(s.date);
                     return (
                       <tr key={s.id || s._id} style={{ borderBottom: '1px solid var(--border-gray)' }}>
                         <td style={{ padding: '0.625rem', fontWeight: 700 }}>{(s.id || s._id).toString().slice(-6)}</td>
@@ -1389,11 +1228,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
               {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'SA'}
             </div>
             Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem' }}>{userSession?.name}</span>
-            {weather && (
-              <span className="ml-4 text-base bg-blue-50 text-blue-800 py-1.5 px-3 rounded-full border border-blue-200 font-semibold flex items-center gap-1.5 shadow-sm">
-                ☀️ Mathura Station: {weather.temperature}°C
-              </span>
-            )}
+
           </div>
           
           <button 

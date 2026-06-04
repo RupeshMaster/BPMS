@@ -158,7 +158,7 @@ export const toggleCheckInThunk = createAsyncThunk(
         // Perform check-in
         res = await api.post('/workers/checkin', { workerId, workerName });
       }
-      return res.data.attendance;
+      return res.data.log;
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
     }
@@ -220,7 +220,9 @@ const getLocalInitialState = () => {
     stocks: { petrol: { current: 8450, capacity: 12400 }, diesel: { current: 12230, capacity: 19700 } },
     nozzles: {
       'A': { id: 'A', fuel: 'Petrol', status: 'Active', assignedWorker: 'Ramesh Kumar', assignedWorkerId: 'worker', reading: 124000 },
-      'B': { id: 'B', fuel: 'Diesel', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 85300 }
+      'B': { id: 'B', fuel: 'Petrol', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 85300 },
+      'C': { id: 'C', fuel: 'Diesel', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 45000 },
+      'D': { id: 'D', fuel: 'Diesel', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 62000 }
     },
     sales: [],
     attendance: [],

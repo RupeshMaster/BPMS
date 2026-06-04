@@ -1,5 +1,5 @@
 import express from 'express';
-import { getWorkers, createWorker, updateWorker, deleteWorker, getAttendance, checkIn, checkOut } from '../controllers/workerController.js';
+import { getWorkers, createWorker, updateWorker, deleteWorker, getAttendance, checkIn, checkOut, toggleWorker } from '../controllers/workerController.js';
 
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.delete('/:id', deleteWorker);
 router.get('/attendance', getAttendance);
 router.post('/checkin', checkIn);
 router.post('/checkout', checkOut);
+router.post('/toggle', toggleWorker);
 
 export default router;

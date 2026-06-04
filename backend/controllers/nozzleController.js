@@ -84,3 +84,43 @@ export const deleteNozzle = async (req, res) => {
     res.status(500).json({ message: 'Error deleting nozzle.', error: err.message });
   }
 };
+
+export const toggleNozzle = async (req, res) => {
+  const { nozzleId } = req.body;
+  try {
+    const nozzles = await DbWrapper.getNozzles();
+    const nz = nozzles.find(n => n.id === nozzleId);
+    if (!nz) return res.status(404).json({ message: 'Nozzle not found.' });
+
+    const newStatus = nz.status === 'Active' ? 'Offline' : 'Active';
+    const updated = await DbWrapper.updateNozzle(nozzleId, { status: newStatus });
+    res.json({ message: 'Nozzle status toggled!', nozzle: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Error toggling nozzle.', error: err.message });
+  }
+};
+
+export const allocateNozzle = async (req, res) => {
+  const { nozzleId, workerId } = req.body;
+  try {
+    const users = await DbWrapper.getUsers();
+    const worker = users.find(u => u.id === workerId);
+    if (!worker) return res.status(404).json({ message: 'Worker not found.' });
+
+    // Clear old nozzle from this worker if any
+    const nozzles = await DbWrapper.getNozzles();
+    const oldNz = nozzles.find(n => n.assignedWorkerId === workerId);
+    if (oldNz) {
+      await DbWrapper.updateNozzle(oldNz.id, { assignedWorker: 'None', assignedWorkerId: '' });
+    }
+
+    // Allocate new nozzle
+    const updated = await DbWrapper.updateNozzle(nozzleId, { assignedWorker: worker.name, assignedWorkerId: workerId });
+    // Also update worker's nozzle
+    await DbWrapper.updateUser(workerId, { nozzle: nozzleId });
+
+    res.json({ message: 'Nozzle allocated successfully!', nozzle: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Error allocating nozzle.', error: err.message });
+  }
+};

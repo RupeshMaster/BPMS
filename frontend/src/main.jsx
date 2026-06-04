@@ -5,6 +5,7 @@ import { store } from './store';
 import { ToastProvider } from './components/Toast';
 import App from './App.jsx';
 import './index.css';
+import './i18n';
 
 // Register PWA Service Worker
 if ('serviceWorker' in navigator) {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const Sidebar = ({ userSession, activeTab, setActiveTab, onLogout, isOpen, onClose }) => {
   const isWorker = userSession?.role === 'worker';
@@ -16,29 +17,31 @@ export const Sidebar = ({ userSession, activeTab, setActiveTab, onLogout, isOpen
     if (onClose) onClose();
   };
 
+  const { t } = useTranslation();
+
   // Define menu items based on role
   const workerMenu = [
-    { id: 'dashboard', label: 'Dashboard', icon: '/assets/dashboard.png' },
-    { id: 'shifts', label: 'Shift Management', icon: '/assets/shifts.png' },
-    { id: 'attendance', label: 'My Attendance', icon: '/assets/attendance.png' },
-    { id: 'sales-entry', label: 'Sales Entry', icon: '/assets/sales.png' },
-    { id: 'nozzles', label: 'Nozzle Management', icon: '/assets/nozzles.png' },
-    { id: 'check-in', label: 'Check In', icon: '/assets/checkin.png' },
-    { id: 'settings', label: 'Settings', icon: '/assets/settings.png' }
+    { id: 'dashboard', label: t('dashboard'), icon: '/assets/dashboard.png' },
+    { id: 'check-in', label: t('check_in'), icon: '/assets/checkin.png' },
+    { id: 'attendance', label: t('my_attendance'), icon: '/assets/attendance.png' },
+    { id: 'nozzles', label: t('nozzle_management'), icon: '/assets/nozzles.png' },
+    { id: 'sales-entry', label: t('sales_entry'), icon: '/assets/sales.png' },
+    { id: 'shifts', label: t('shifts'), icon: '/assets/shifts.png' },
+    { id: 'settings', label: t('settings'), icon: '/assets/settings.png' }
   ];
 
   const adminMenu = [
-    { id: 'dashboard', label: 'Dashboard', icon: '/assets/dashboard.png' },
-    { id: 'fuel', label: 'Fuel Management', icon: '/assets/nozzles.png' },
-    { id: 'nozzles', label: 'Nozzle Management', icon: '/assets/nozzles.png' },
-    { id: 'workers', label: 'Worker Management', icon: '/assets/avatar.png' },
-    { id: 'entries', label: 'Daily Entries', icon: '/assets/attendance.png' },
-    { id: 'shifts', label: 'Shift Management', icon: '/assets/shifts.png' },
-    { id: 'expenses', label: 'Expense Tracking', icon: '/assets/sales.png' },
-    { id: 'generator', label: 'Generator Management', icon: '/assets/settings.png' },
-    { id: 'sales-analysis', label: 'Sales Analysis', icon: '/assets/sales.png' },
-    { id: 'reports', label: 'Reports', icon: '/assets/attendance.png' },
-    { id: 'settings', label: 'Settings', icon: '/assets/settings.png' }
+    { id: 'dashboard', label: t('dashboard'), icon: '/assets/dashboard.png' },
+    { id: 'fuel', label: t('fuel_management'), icon: '/assets/nozzles.png' },
+    { id: 'nozzles', label: t('nozzle_management'), icon: '/assets/nozzles.png' },
+    { id: 'workers', label: t('workers'), icon: '/assets/avatar.png' },
+    { id: 'entries', label: t('daily_entries'), icon: '/assets/attendance.png' },
+    { id: 'shifts', label: t('shifts'), icon: '/assets/shifts.png' },
+    { id: 'expenses', label: t('expenses'), icon: '/assets/sales.png' },
+    { id: 'generator', label: t('generator'), icon: '/assets/settings.png' },
+    { id: 'sales-analysis', label: t('sales_analysis'), icon: '/assets/sales.png' },
+    { id: 'reports', label: t('reports'), icon: '/assets/attendance.png' },
+    { id: 'settings', label: t('settings'), icon: '/assets/settings.png' }
   ];
 
   const menuItems = isWorker ? workerMenu : adminMenu;
@@ -74,7 +77,11 @@ export const Sidebar = ({ userSession, activeTab, setActiveTab, onLogout, isOpen
                     transform: item.id === 'dashboard' ? 'scale(1.5)' : 'none'
                   }} 
                 />
-                <span>{item.label}</span>
+                <span
+                  style={item.id === 'dashboard' ? { fontWeight: 'bold', fontSize: '1.15rem' } : { fontSize: '1rem' }}
+                >
+                  {item.label}
+                </span>
               </div>
             </li>
           ))}

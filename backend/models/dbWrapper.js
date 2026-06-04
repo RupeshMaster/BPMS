@@ -25,7 +25,9 @@ const defaultDb = {
   ],
   nozzles: {
     'A': { id: 'A', fuel: 'Petrol', status: 'Active', assignedWorker: 'Ramesh Kumar', assignedWorkerId: 'worker', reading: 124000, openingReading: 124000, accuracyRate: 98.6, lastMaintenance: '15 Feb 2026' },
-    'B': { id: 'B', fuel: 'Diesel', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 85300, openingReading: 85300, accuracyRate: 98.6, lastMaintenance: '10 Feb 2026' }
+    'B': { id: 'B', fuel: 'Petrol', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 85300, openingReading: 85300, accuracyRate: 98.6, lastMaintenance: '10 Feb 2026' },
+    'C': { id: 'C', fuel: 'Diesel', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 45000, openingReading: 45000, accuracyRate: 99.1, lastMaintenance: '01 Mar 2026' },
+    'D': { id: 'D', fuel: 'Diesel', status: 'Active', assignedWorker: 'None', assignedWorkerId: '', reading: 62000, openingReading: 62000, accuracyRate: 99.5, lastMaintenance: '20 Feb 2026' }
   },
   sales: [
     { workerId: 'worker', workerName: 'Ramesh Kumar', nozzle: 'A', fuel: 'Petrol', liters: 2400, amount: 249600, payment: 'Mix', cash: 12500, digital: 8300, date: new Date().toISOString() }
@@ -286,19 +288,24 @@ export const DbWrapper = {
 
   async logAttendance(attendanceData) {
     if (isMongoConnected()) {
-      return await Attendance.findOneAndUpdate(
-        { workerId: attendanceData.workerId, date: attendanceData.date },
-        attendanceData,
-        { upsert: true, new: true }
-      );
+      if (attendanceData._id) {
+        return await Attendance.findByIdAndUpdate(attendanceData._id, attendanceData, { new: true });
+      } else {
+        return await Attendance.create(attendanceData);
+      }
     } else {
       const db = getJsonDb();
-      const idx = db.attendance.findIndex(a => a.workerId === attendanceData.workerId && a.date === attendanceData.date);
-      if (idx !== -1) {
-        db.attendance[idx] = { ...db.attendance[idx], ...attendanceData };
-      } else {
-        db.attendance.push(attendanceData);
+      if (attendanceData._id || attendanceData.id) {
+        const idToMatch = attendanceData._id || attendanceData.id;
+        const idx = db.attendance.findIndex(a => (a._id === idToMatch) || (a.id === idToMatch));
+        if (idx !== -1) {
+          db.attendance[idx] = { ...db.attendance[idx], ...attendanceData };
+          saveJsonDb(db);
+          return db.attendance[idx];
+        }
       }
+      attendanceData._id = Date.now().toString();
+      db.attendance.push(attendanceData);
       saveJsonDb(db);
       return attendanceData;
     }
@@ -315,11 +322,11 @@ export const DbWrapper = {
   },
 
   async createExpense(expenseData) {
+    const newExpense = { ...expenseData, id: expenseData.id || Date.now() };
     if (isMongoConnected()) {
-      return await Expense.create(expenseData);
+      return await Expense.create(newExpense);
     } else {
       const db = getJsonDb();
-      const newExpense = { ...expenseData, id: expenseData.id || Date.now() };
       db.expenses.push(newExpense);
       saveJsonDb(db);
       return newExpense;

@@ -1,0 +1,18 @@
+{
+  "dashboard": "Dashboard",
+  "fuel_management": "Fuel Management",
+  "nozzle_management": "Nozzle Management",
+  "workers": "Workers",
+  "daily_entries": "Daily Entries",
+  "shifts": "Shifts",
+  "expenses": "Expenses",
+  "generator": "Generator",
+  "sales_analysis": "Sales Analysis",
+  "reports": "Reports",
+  "settings": "Settings",
+  "check_in": "Check In",
+  "my_attendance": "My Attendance",
+  "sales_entry": "Sales Entry",
+  "logout": "Log Out",
+  "welcome": "Welcome"
+}

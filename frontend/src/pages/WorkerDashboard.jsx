@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from '../components/Sidebar';
 import { useToast } from '../components/Toast';
+import { formatDate } from '../utils/formatDate';
 import { 
   fetchInitialData,
   addSaleThunk,
@@ -46,13 +47,31 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
   const [salesNozzle, setSalesNozzle] = useState('A');
   const [salesFuel, setSalesFuel] = useState('Petrol');
   const [salesRate, setSalesRate] = useState(104.2);
-  const [salesLiters, setSalesLiters] = useState('');
+  const [salesLiters, setSalesLiters] = useState(0);
+  const [openingReading, setOpeningReading] = useState(0);
+  const [closingReading, setClosingReading] = useState(0);
+  const [testQuantity, setTestQuantity] = useState(0);
   const [salesEstAmount, setSalesEstAmount] = useState(0);
   const [salesPayment, setSalesPayment] = useState('Cash');
 
-  // Load backend data on mount
+  // Sync opening reading when nozzle changes
+  useEffect(() => {
+    if (nozzles[salesNozzle]) {
+      setOpeningReading(nozzles[salesNozzle].reading || 0);
+      setClosingReading(nozzles[salesNozzle].reading || 0);
+      setTestQuantity(0);
+    }
+  }, [salesNozzle, nozzles]);
+
+  // Load backend data on mount and poll every 10 seconds for real-time admin changes
   useEffect(() => {
     dispatch(fetchInitialData());
+    
+    const intervalId = setInterval(() => {
+      dispatch(fetchInitialData());
+    }, 10000); // 10 seconds polling
+    
+    return () => clearInterval(intervalId);
   }, [dispatch]);
 
   // Load / recalculate stats whenever sales, attendance or user changes
@@ -96,10 +115,12 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
   }, [salesNozzle, nozzles]);
 
   // Handle sales estimation amount
+  // Auto-calculate liters and amount
   useEffect(() => {
-    const liters = parseFloat(salesLiters) || 0;
-    setSalesEstAmount(liters * salesRate);
-  }, [salesLiters, salesRate]);
+    const calculatedLiters = Math.max(0, (parseFloat(closingReading) || 0) - (parseFloat(openingReading) || 0) - (parseFloat(testQuantity) || 0));
+    setSalesLiters(calculatedLiters);
+    setSalesEstAmount(calculatedLiters * salesRate);
+  }, [openingReading, closingReading, testQuantity, salesRate]);
 
   // Actions
   const handleCheckInToggle = () => {
@@ -162,7 +183,8 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
     })).then((res) => {
       if (!res.error) {
         showToast(`Logged sale of ${liters}L ${nozzle.fuel} successfully!`);
-        setSalesLiters('');
+        setClosingReading(parseFloat(closingReading) || 0);
+        setTestQuantity(0);
       } else {
         showToast(res.payload?.message || 'Error logging sale.', 'error');
       }
@@ -314,7 +336,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
         <div className="panel-card" style={{ borderRadius: '0.75rem', padding: '1.5rem', border: '1px solid var(--border-gray)', boxShadow: 'var(--shadow-lg)' }}>
           <div className="panel-title">Assigned Shifts Schedule</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {shifts.map((shift) => (
+            {shifts.filter(s => !userSession?.shift || s.name === userSession?.shift).map((shift) => (
               <div key={shift.id || shift._id} className="shift-info-card">
                 <div className="flex-column">
                   <span className="text-xl font-bold">{shift.name}</span>
@@ -363,7 +385,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
                 ) : (
                   reverseAttendance.map((log, index) => (
                     <tr key={index} style={{ borderBottom: '1px solid var(--border-gray)' }}>
-                      <td style={{ padding: '1rem 1.25rem' }}>{log.date}</td>
+                      <td style={{ padding: '1rem 1.25rem' }}>{formatDate(log.date)}</td>
                       <td style={{ padding: '1rem 1.25rem' }}>{log.checkIn}</td>
                       <td style={{ padding: '1rem 1.25rem' }}>{log.checkOut || '--:--'}</td>
                       <td style={{ padding: '1rem 1.25rem' }}>
@@ -423,18 +445,52 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
                 readOnly
               />
             </div>
-            <div>
-              <label className="font-bold block text-base" style={{ paddingLeft: '1rem', marginBottom: '0.75rem' }}>Liters Dispensed</label>
-              <input 
-                type="number" 
-                className="input-field w-full h-12 text-base mb-0" 
-                placeholder="Enter liters" 
-                min="0.1" 
-                step="0.01" 
-                value={salesLiters}
-                onChange={(e) => setSalesLiters(e.target.value)}
-                required 
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="font-bold block text-base" style={{ paddingLeft: '1rem', marginBottom: '0.75rem' }}>Opening Reading</label>
+                <input 
+                  type="number" 
+                  className="input-field w-full h-12 text-base mb-0 bg-slate-200 cursor-not-allowed" 
+                  value={openingReading}
+                  readOnly 
+                />
+              </div>
+              <div>
+                <label className="font-bold block text-base" style={{ paddingLeft: '1rem', marginBottom: '0.75rem' }}>Closing Reading</label>
+                <input 
+                  type="number" 
+                  className="input-field w-full h-12 text-base mb-0" 
+                  placeholder="Enter closing reading" 
+                  min={openingReading} 
+                  step="0.01" 
+                  value={closingReading}
+                  onChange={(e) => setClosingReading(e.target.value)}
+                  required 
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="font-bold block text-base" style={{ paddingLeft: '1rem', marginBottom: '0.75rem' }}>Test Quantity (L)</label>
+                <input 
+                  type="number" 
+                  className="input-field w-full h-12 text-base mb-0" 
+                  placeholder="e.g. 5" 
+                  min="0" 
+                  step="0.01" 
+                  value={testQuantity}
+                  onChange={(e) => setTestQuantity(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="font-bold block text-base" style={{ paddingLeft: '1rem', marginBottom: '0.75rem' }}>Calculated Liters</label>
+                <input 
+                  type="number" 
+                  className="input-field w-full h-12 text-base mb-0 bg-slate-200 cursor-not-allowed text-bp-blue font-bold" 
+                  value={salesLiters.toFixed(2)}
+                  readOnly 
+                />
+              </div>
             </div>
             <div>
               <label className="font-bold block text-base" style={{ paddingLeft: '1rem', marginBottom: '0.75rem' }}>Current Rate (per Liter)</label>
@@ -478,9 +534,9 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
         <div className="panel-card" style={{ borderRadius: '0.75rem', padding: '1.5rem', border: '1px solid var(--border-gray)', boxShadow: 'var(--shadow-lg)' }}>
           <div className="panel-title">Station Nozzle Details</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {Object.keys(nozzles).map((key) => {
+            {Object.keys(nozzles).filter(key => key === (userSession?.nozzle || 'A')).map((key) => {
               const nozzle = nozzles[key];
-              const isMine = key === (userSession?.nozzle || 'A');
+              const isMine = true;
               return (
                 <div key={key} className="shift-info-card" style={{ border: isMine ? '2px solid var(--bp-blue)' : '1px solid var(--border-gray)' }}>
                   <div className="flex-column" style={{ gap: '0.3125rem' }}>
@@ -612,6 +668,33 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
       </motion.div>
     );
   };
+
+  if (workerDetails?.status === 'Inactive') {
+    return (
+      <div className="flex flex-col min-h-screen w-full items-center justify-center p-6 text-center" style={{ backgroundColor: 'var(--bg-light-gray)' }}>
+        <div style={{ padding: '3rem', backgroundColor: '#fff', borderRadius: '1rem', boxShadow: 'var(--shadow-xl)', maxWidth: '500px', width: '100%' }}>
+          <div style={{ color: 'var(--status-red-dark)', marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+            <svg viewBox="0 0 24 24" width="72" height="72" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h2 style={{ fontSize: '1.875rem', fontWeight: 800, color: 'var(--text-black)', marginBottom: '1rem' }}>Account Suspended</h2>
+          <p style={{ color: 'var(--text-gray)', fontSize: '1.1rem', marginBottom: '2.5rem', lineHeight: 1.5 }}>
+            Your account has been temporarily suspended by the administrator. You cannot access the dashboard or perform any actions at this time.
+          </p>
+          <button 
+            onClick={onLogout}
+            className="btn-primary auth-btn"
+            style={{ width: '100%', height: '3.5rem', fontSize: '1.25rem', fontWeight: 'bold', backgroundColor: 'var(--status-red-dark)', border: 'none', borderRadius: '0.5rem', color: '#fff' }}
+          >
+            Log Out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', minHeight: 'calc(100vh - 5.375rem)' }}>

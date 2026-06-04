@@ -121,17 +121,18 @@ export const checkIn = async (req, res) => {
 
 export const checkOut = async (req, res) => {
   const { workerId } = req.body;
-  const today = new Date().toISOString().split('T')[0];
   const timeString = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   try {
     const attendanceLogs = await DbWrapper.getAttendance();
-    const activeLog = attendanceLogs.find(a => a.workerId === workerId && a.date === today);
+    // Find ANY active check-in for this worker, even from a past date
+    const activeLog = attendanceLogs.find(a => a.workerId === workerId && a.status === 'Active');
     if (!activeLog) {
-      return res.status(404).json({ message: 'No active check-in found for today.' });
+      return res.status(404).json({ message: 'No active check-in found.' });
     }
 
+    const baseLog = activeLog.toObject ? activeLog.toObject() : activeLog;
     const log = {
-      ...activeLog,
+      ...baseLog,
       checkOut: timeString,
       status: 'Inactive' // Marked off-duty
     };
@@ -140,5 +141,19 @@ export const checkOut = async (req, res) => {
     res.json({ message: 'Check-out logged successfully!', log: updated });
   } catch (err) {
     res.status(500).json({ message: 'Error logging check-out.', error: err.message });
+  }
+};
+
+export const toggleWorker = async (req, res) => {
+  const { workerId } = req.body;
+  try {
+    const worker = await DbWrapper.getUserById(workerId);
+    if (!worker) return res.status(404).json({ message: 'Worker not found.' });
+
+    const newStatus = worker.status === 'Active' ? 'Inactive' : 'Active';
+    const updated = await DbWrapper.updateUser(workerId, { status: newStatus });
+    res.json({ message: 'Worker status toggled!', worker: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Error toggling worker.', error: err.message });
   }
 };

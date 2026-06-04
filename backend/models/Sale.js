@@ -7,6 +7,7 @@ const saleSchema = new mongoose.Schema({
   fuel: { type: String, required: true, enum: ['Petrol', 'Diesel'] },
   liters: { type: Number, required: true },
   amount: { type: Number, required: true },
+  ratePerLitre: { type: Number },
   payment: { type: String, required: true, enum: ['Cash', 'Digital', 'Mix'], default: 'Cash' },
   cash: { type: Number, default: 0 },
   digital: { type: Number, default: 0 },
