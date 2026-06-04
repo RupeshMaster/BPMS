@@ -56,7 +56,7 @@ export default function App() {
         />
 
         {/* Dashboard and Tab Contents */}
-        <div className="flex-grow relative" style={{ marginTop: '64px' }}>
+        <div className="flex-grow relative page-content">
           <Routes>
             <Route path="/" element={<Home userSession={userSession} />} />
             

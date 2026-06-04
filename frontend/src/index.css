@@ -154,9 +154,32 @@ body {
     transform: scale(0.98);
 }
 
+@utility btn-outline {
+    background-color: transparent;
+    color: var(--bg-white);
+    border: 2px solid var(--bg-white);
+    border-radius: 25px;
+    font-family: var(--font-family);
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background-color: var(--bg-white);
+    color: var(--bp-blue);
+}
+
+.btn-outline:active {
+    transform: scale(0.98);
+}
+
 /* Navbar */
 .navbar {
-    height: 64px;
+    height: 86px;
     width: 100%;
     border-bottom: 1px solid var(--text-black);
     display: flex;
@@ -196,27 +219,28 @@ body {
 .language-selector {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 16px;
+    gap: 12px;
+    font-size: 20px;
+    font-weight: 500;
     cursor: pointer;
 }
 
 .dropdown-icon {
-    width: 12px;
-    height: 12px;
+    width: 16px;
+    height: 16px;
     fill: var(--bp-navy);
 }
 
 /* Sidebar */
 .sidebar {
     width: 260px;
-    height: calc(100dvh - 64px);
+    height: calc(100dvh - 86px);
     border-right: 1px solid var(--text-black);
     background-color: var(--bg-white);
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 64px;
+    top: 86px;
     left: 0;
     z-index: 40;
     overflow: hidden;
@@ -285,11 +309,16 @@ body {
     object-fit: cover;
 }
 
+/* Page Layout */
+.page-content {
+    margin-top: 86px;
+}
+
 /* Dashboard Layout */
 .dashboard-container {
     margin-left: 260px;
     padding: 24px 32px 32px 32px;
-    min-height: calc(100vh - 64px);
+    min-height: calc(100vh - 86px);
     background-color: var(--bg-white);
     position: relative;
 }
@@ -575,8 +604,8 @@ select.input-field {
     background-position: center !important;
     position: relative !important;
     display: flex !important;
-    align-items: flex-end !important;
-    padding-bottom: 150px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
 }
 
 .hero-overlay {
@@ -592,25 +621,29 @@ select.input-field {
 .hero-content {
     position: relative !important;
     z-index: 2 !important;
-    padding-left: 82px !important;
-    max-width: 900px !important;
+    padding-left: 3% !important;
+    max-width: 1200px !important;
+    padding-bottom: 12vh !important;
 }
 
 .hero-title {
-    font-size: 64px !important;
+    font-size: 72px !important;
     font-weight: 700 !important;
     color: var(--bg-white) !important;
-    line-height: 1.2 !important;
-    margin-bottom: 100px !important;
+    line-height: 1.1 !important;
+    margin-bottom: 40px !important;
 }
 
 .btn-large {
-    width: 566px !important;
-    height: 125px !important;
-    font-size: 48px !important;
-    border-radius: 20px !important;
+    width: auto !important;
+    padding: 0 50px !important;
+    height: 72px !important;
+    font-size: 26px !important;
+    border-radius: 16px !important;
     text-decoration: none !important;
     display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .btn-register-nav {
@@ -645,6 +678,25 @@ select.input-field {
 @media (max-width: 1023px) {
     .navbar {
         padding: 0 15px !important;
+        height: 64px !important;
+    }
+
+    .language-selector {
+        gap: 8px !important;
+        font-size: 16px !important;
+    }
+
+    .dropdown-icon {
+        width: 12px !important;
+        height: 12px !important;
+    }
+
+    .page-content {
+        margin-top: 64px !important;
+    }
+
+    .hero-section {
+        height: calc(100vh - 64px) !important;
     }
 
     .navbar-right {
@@ -684,6 +736,9 @@ select.input-field {
     .dashboard-container {
         margin-left: 0 !important;
         padding: 20px !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        overflow-x: hidden !important;
     }
 
     .main-content-row {
@@ -694,6 +749,9 @@ select.input-field {
     .panel-card {
         padding: 20px !important;
         border-radius: 20px !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
     }
 
     .hero-section {
@@ -703,18 +761,63 @@ select.input-field {
     .hero-content {
         padding-left: 20px !important;
         padding-right: 20px !important;
+        justify-content: flex-start !important;
+        padding-top: 5vh !important;
+        padding-bottom: 0 !important;
+        align-items: center !important;
+        text-align: center !important;
+        max-width: 100% !important;
+    }
+
+    .btn-large {
+        padding: 0 40px !important;
+        height: 60px !important;
+        font-size: 20px !important;
+        border-radius: 12px !important;
+    }
+
+    .hero-actions {
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
     }
 
     .hero-title {
-        font-size: 36px !important;
+        font-size: clamp(30px, 6vw, 32px) !important;
         margin-bottom: 40px !important;
     }
 
     .btn-large {
         width: 100% !important;
-        max-width: 400px !important;
-        height: 70px !important;
-        font-size: 24px !important;
+        max-width: 300px !important;
+        height: 54px !important;
+        font-size: 18px !important;
+    }
+
+    /* Make dashboard sections vertical on mobile */
+    .dashboard-container .grid,
+    .dashboard-container .responsive-grid,
+    .cards-row,
+    .main-content-row,
+    .dashboard-container [class*="grid-cols-"],
+    .dashboard-container [style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    /* Fix Export CSV button on mobile across all dashboards */
+    .dashboard-container > div:first-child > button {
+        white-space: nowrap !important;
+        align-self: flex-start !important;
+        transform: translateY(-8px) !important;
+        margin-top: 0 !important;
+        padding: 0 14px !important;
+        height: 38px !important;
+        font-size: 13px !important;
     }
 }
 

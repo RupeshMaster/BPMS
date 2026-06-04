@@ -51,10 +51,8 @@ export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }
           style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.625rem' }}
         >
           <div 
-            className="bp-logo-wrapper" 
+            className="bp-logo-wrapper w-[2.75rem] h-[2.75rem] lg:w-[4rem] lg:h-[4rem]" 
             style={{ 
-              width: '2.75rem', 
-              height: '2.75rem', 
               borderRadius: '50%',
               overflow: 'hidden',
               display: 'flex',
@@ -72,7 +70,7 @@ export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }
             />
           </div>
           <div 
-            className="logo-text text-base sm:text-xl font-bold" 
+            className="logo-text text-base sm:text-xl lg:text-[1.75rem] font-bold" 
             style={{ fontWeight: 800, color: 'var(--bp-navy)', letterSpacing: '1px' }}
           >
             <span className="hidden sm:inline">Bharat Petroleum</span>
@@ -82,39 +80,12 @@ export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }
       </div>
       
       <div className="navbar-right flex items-center gap-6 md:gap-10">
-        <div className="language-selector flex items-center gap-2 cursor-pointer text-[1rem] sm:text-base" onClick={handleLanguageToggle}>
+        <div className="language-selector" onClick={handleLanguageToggle}>
           <span>{lang === 'English' ? 'EN' : 'HI'}</span>
-          <svg className="dropdown-icon" viewBox="0 0 24 24" style={{ width: '0.75rem', height: '0.75rem' }}><path d="M7 10l5 5 5-5z"/></svg>
+          <svg className="dropdown-icon" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
         </div>
 
-        {/* Auth status or controls */}
-        {!userSession && !isAuthPage && (
-          <div className="flex gap-2 sm:gap-6">
-            <button 
-              onClick={() => navigate('/login')} 
-              className="btn-primary w-[5rem] sm:w-[7.5rem] h-[2.25rem] sm:h-[2.5rem] text-[0.875rem] sm:text-base font-medium" 
-              style={{ 
-                backgroundColor: 'transparent', 
-                border: '2px solid var(--bp-blue)', 
-                color: 'var(--bp-blue)', 
-                borderRadius: '0.75rem',
-                cursor: 'pointer'
-              }}
-            >
-              Log In
-            </button>
-            <button 
-              onClick={() => navigate('/register')} 
-              className="btn-primary w-[5rem] sm:w-[7.5rem] h-[2.25rem] sm:h-[2.5rem] text-[0.875rem] sm:text-base font-medium"
-              style={{
-                borderRadius: '0.75rem',
-                cursor: 'pointer'
-              }}
-            >
-              Register
-            </button>
-          </div>
-        )}
+
       </div>
     </nav>
   );
