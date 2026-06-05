@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import Attendance from '../backend/models/Attendance.js';
 import dotenv from 'dotenv';
 
-dotenv.config({ path: '../backend/.env' });
+dotenv.config({ path: '../backend/.env', override: true });
 
 const checkDb = async () => {
   try {

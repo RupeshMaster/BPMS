@@ -8,7 +8,7 @@ import fuelRoutes from './routes/fuelRoutes.js';
 import nozzleRoutes from './routes/nozzleRoutes.js';
 import workerRoutes from './routes/workerRoutes.js';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
