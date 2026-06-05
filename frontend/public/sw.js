@@ -91,11 +91,13 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         })
-        .catch(() => {
+        .catch((err) => {
           // If offline and request is HTML/navigation, return the cached index.html
-          if (event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('/');
+          const acceptHeader = event.request.headers.get('accept');
+          if (acceptHeader && acceptHeader.includes('text/html')) {
+            return caches.match('/') || caches.match('/index.html');
           }
+          throw err; // Rethrow network errors so the browser handles it properly
         });
     })
   );
