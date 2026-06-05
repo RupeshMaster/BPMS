@@ -6,7 +6,8 @@ dotenv.config();
 
 const checkDb = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/bharat_petroleum');
+    const dbUri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bharat_petroleum';
+    await mongoose.connect(dbUri);
     console.log('Connected to MongoDB');
 
     const today = new Date().toISOString().split('T')[0];
