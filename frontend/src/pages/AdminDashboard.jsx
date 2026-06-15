@@ -13,6 +13,7 @@ import api from '../utils/api';
 import { 
   fetchInitialData,
   refillStockThunk,
+  updateCapacityThunk,
   allocateNozzleThunk,
   toggleNozzleThunk,
   toggleWorkerThunk,
@@ -43,6 +44,10 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
   const [refillType, setRefillType] = useState('Petrol');
   const [refillLiters, setRefillLiters] = useState('');
   const [refillCost, setRefillCost] = useState('');
+
+  const [showCapacityModal, setShowCapacityModal] = useState(false);
+  const [capacityType, setCapacityType] = useState('Petrol');
+  const [capacityValue, setCapacityValue] = useState('');
 
   const [allocateNozzleId, setAllocateNozzleId] = useState('A');
   const [allocateWorkerId, setAllocateWorkerId] = useState('');
@@ -152,6 +157,25 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
         setRefillCost('');
       } else {
         showToast('Error registering stock refill.', 'error');
+      }
+    });
+  };
+
+  const handleCapacitySubmit = (e) => {
+    e.preventDefault();
+    const cap = parseFloat(capacityValue) || 0;
+    if (cap <= 0) {
+      showToast('Please enter a valid capacity.', 'error');
+      return;
+    }
+
+    dispatch(updateCapacityThunk({ fuelType: capacityType, capacity: cap })).then((res) => {
+      if (!res.error) {
+        showToast(`Updated ${capacityType} capacity to ${cap}L`);
+        setShowCapacityModal(false);
+        setCapacityValue('');
+      } else {
+        showToast('Capacity update failed.', 'error');
       }
     });
   };
@@ -403,7 +427,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
     }
 
     let csvContent = 'data:text/csv;charset=utf-8,';
-    csvContent += 'Sale ID,Worker,Nozzle,Fuel,Liters,Amount,Payment Mode,Date\n';
+    csvContent += 'Sale ID,Employee,Nozzle,Fuel,Liters,Amount,Payment Mode,Date\n';
     
     sales.forEach(s => {
       csvContent += `${s.id || s._id},"${s.workerName}",Nozzle ${s.nozzle},${s.fuel},${s.liters},${s.amount},${s.payment},${s.date}\n`;
@@ -495,7 +519,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
             </div>
 
             <div className="shift-info-card">
-              <span className="text-xl font-bold">Total workers</span>
+              <span className="text-xl font-bold">Total Employees</span>
               <span className="text-xl font-bold">{activeShift.workersCount}</span>
             </div>
 
@@ -561,6 +585,13 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                   <div style={{ backgroundColor: 'var(--bp-navy)', height: '100%', width: `${Math.min(100, Math.round((stocks.diesel.current / stocks.diesel.capacity) * 100))}%`, transition: 'width 0.5s ease' }}></div>
                 </div>
               </div>
+              <button 
+                onClick={() => setShowCapacityModal(true)}
+                className="btn-primary" 
+                style={{ height: '2.5rem', width: '100%', fontSize: '1rem', marginTop: '1rem' }}
+              >
+                Edit Tank Capacities
+              </button>
             </div>
           </div>
 
@@ -680,7 +711,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                 </select>
               </div>
               <div>
-                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Assign Worker</label>
+                <label style={{ fontWeight: 700, display: 'block', marginBottom: '0.3125rem' }}>Assign Employee</label>
                 <select 
                   className="input-field" 
                   style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
@@ -715,7 +746,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
       >
         <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.5rem' }}>
           <div className="panel-card" style={{ borderRadius: '0.75rem', padding: '1.5rem', border: '1px solid var(--border-gray)', boxShadow: 'var(--shadow-lg)' }}>
-            <div className="panel-title">Registered Workers</div>
+            <div className="panel-title">Registered Employees</div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '1rem', textAlign: 'left' }}>
                 <thead>
@@ -730,7 +761,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                 <tbody>
                   {workersList.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-gray)' }}>No workers registered.</td>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-gray)' }}>No employees registered.</td>
                     </tr>
                   ) : (
                     workersList.map((key) => {
@@ -768,7 +799,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
           </div>
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem', alignSelf: 'start' }}>
-            <div className="panel-title">Add Worker Account</div>
+            <div className="panel-title">Add Employee Account</div>
             <form onSubmit={handleAddWorker} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input 
                 type="text" 
@@ -1356,24 +1387,27 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
       
       <main className="dashboard-container" style={{ flexGrow: 1 }}>
         <div className="flex-between mb-20">
-          <div className="welcome-msg" style={{ marginBottom: 0 }}>
-            <div 
-              className="user-avatar" 
-              style={{ 
-                border: '2px solid var(--bp-blue)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontWeight: 700, 
-                color: 'var(--bp-navy)', 
-                fontSize: '1rem' 
-              }}
-            >
-              {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'AD'}
+          {activeTab === 'dashboard' ? (
+            <div className="welcome-msg" style={{ marginBottom: 0 }}>
+              <div 
+                className="user-avatar" 
+                style={{ 
+                  border: '2px solid var(--bp-blue)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontWeight: 700, 
+                  color: 'var(--bp-navy)', 
+                  fontSize: '1rem' 
+                }}
+              >
+                {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'AD'}
+              </div>
+              Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem' }}>{userSession?.name}</span>
             </div>
-            Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem' }}>{userSession?.name}</span>
-
-          </div>
+          ) : (
+            <h2 className="text-2xl font-bold capitalize" style={{ color: 'var(--bp-navy)' }}>{activeTab.replace('-', ' ')}</h2>
+          )}
           
           <button 
             onClick={handleExportCSV}
@@ -1401,6 +1435,51 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
           </div>
         </AnimatePresence>
       </main>
+
+      {/* Edit Capacity Modal */}
+      <AnimatePresence>
+        {showCapacityModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.6)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              style={{ background: '#fff', padding: '2rem', borderRadius: '1rem', width: '90%', maxWidth: '400px' }}
+            >
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1.5rem', color: 'var(--bp-navy)' }}>Edit Tank Capacity</h3>
+              <form onSubmit={handleCapacitySubmit} className="flex flex-col gap-4">
+                <div>
+                  <label className="font-bold block mb-2">Fuel Type</label>
+                  <select 
+                    className="input-field w-full"
+                    value={capacityType}
+                    onChange={(e) => setCapacityType(e.target.value)}
+                  >
+                    <option value="Petrol">Petrol</option>
+                    <option value="Diesel">Diesel</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="font-bold block mb-2">New Capacity (Liters)</label>
+                  <input 
+                    type="number" 
+                    className="input-field w-full"
+                    placeholder="Enter new capacity"
+                    value={capacityValue}
+                    onChange={(e) => setCapacityValue(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="flex gap-4 mt-4">
+                  <button type="button" onClick={() => setShowCapacityModal(false)} className="btn-primary w-full" style={{ background: 'var(--border-gray)', color: '#333' }}>Cancel</button>
+                  <button type="submit" className="btn-primary w-full">Save</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 };

@@ -97,6 +97,17 @@ export const refillStockThunk = createAsyncThunk(
     }
   }
 );
+export const updateCapacityThunk = createAsyncThunk(
+  'data/updateCapacityThunk',
+  async ({ fuelType, capacity }, { rejectWithValue }) => {
+    try {
+      const res = await api.put('/fuel/stock', { fuelType, capacity });
+      return res.data.stock;
+    } catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
 
 export const allocateNozzleThunk = createAsyncThunk(
   'data/allocateNozzleThunk',
@@ -148,15 +159,15 @@ export const toggleWorkerThunk = createAsyncThunk(
 
 export const toggleCheckInThunk = createAsyncThunk(
   'data/toggleCheckInThunk',
-  async ({ workerId, workerName, isCheckedIn }, { rejectWithValue }) => {
+  async ({ workerId, workerName, isCheckedIn, deviceDate, deviceTime, openingReading, closingReading }, { rejectWithValue }) => {
     try {
       let res;
       if (isCheckedIn) {
         // Perform check-out
-        res = await api.post('/workers/checkout', { workerId });
+        res = await api.post('/workers/checkout', { workerId, deviceTime, closingReading });
       } else {
         // Perform check-in
-        res = await api.post('/workers/checkin', { workerId, workerName });
+        res = await api.post('/workers/checkin', { workerId, workerName, deviceDate, deviceTime, openingReading });
       }
       return res.data.log;
     } catch (err) {
@@ -308,6 +319,16 @@ const dataSlice = createSlice({
           state.stocks[fuelType].current = stock.current;
         }
         state.expenses.unshift(expense);
+      })
+      // Capacity Update
+      .addCase(updateCapacityThunk.fulfilled, (state, action) => {
+        const stock = action.payload;
+        if (stock) {
+          const key = stock.fuelType.toLowerCase();
+          if (state.stocks[key]) {
+            state.stocks[key] = stock;
+          }
+        }
       })
       // Nozzle allocation
       .addCase(allocateNozzleThunk.fulfilled, (state, action) => {

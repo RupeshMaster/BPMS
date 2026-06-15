@@ -404,7 +404,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
     }
 
     let csvContent = 'data:text/csv;charset=utf-8,';
-    csvContent += 'Sale ID,Worker,Nozzle,Fuel,Liters,Amount,Payment Mode,Date\n';
+    csvContent += 'Sale ID,Employee,Nozzle,Fuel,Liters,Amount,Payment Mode,Date\n';
     
     sales.forEach(s => {
       csvContent += `${s.id || s._id},"${s.workerName}",Nozzle ${s.nozzle},${s.fuel},${s.liters},${s.amount},${s.payment},${s.date}\n`;
@@ -496,7 +496,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
             </div>
 
             <div className="shift-info-card">
-              <span className="text-xl font-bold">Total workers</span>
+              <span className="text-xl font-bold">Total Employees</span>
               <span className="text-xl font-bold">{activeShift.workersCount}</span>
             </div>
 
@@ -657,7 +657,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
       >
         <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '1.5rem' }}>
           <div className="panel-card" style={{ borderRadius: '0.75rem', padding: '1.5rem', border: '1px solid var(--border-gray)', boxShadow: 'var(--shadow-lg)' }}>
-            <div className="panel-title">Registered Workers</div>
+            <div className="panel-title">Registered Employees</div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '1rem', textAlign: 'left' }}>
                 <thead>
@@ -672,7 +672,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                 <tbody>
                   {workersList.length === 0 ? (
                     <tr>
-                      <td colSpan="5" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-gray)' }}>No workers registered.</td>
+                      <td colSpan="5" style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-gray)' }}>No employees registered.</td>
                     </tr>
                   ) : (
                     workersList.map((key) => {
@@ -710,7 +710,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
           </div>
 
           <div className="panel-card panel-card-up" style={{ borderRadius: '0.75rem', padding: '1.5rem' }}>
-            <div className="panel-title">Add Worker Account</div>
+            <div className="panel-title">Add Employee Account</div>
             <form onSubmit={handleAddWorker} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input 
                 type="text" 
@@ -750,7 +750,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                 <option value="B">Nozzle B</option>
                 <option value="None">None</option>
               </select>
-              <button type="submit" className="btn-primary auth-btn w-full h-12 text-xl font-bold mt-[0.625rem]">Save Worker</button>
+              <button type="submit" className="btn-primary auth-btn w-full h-12 text-xl font-bold mt-[0.625rem]">Save Employee</button>
             </form>
           </div>
         </div>
@@ -825,7 +825,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                   <div className="flex-column" style={{ gap: '0.3125rem' }}>
                     <span className="text-base font-bold">{shift.name}</span>
                     <span style={{ fontSize: '1rem', color: 'var(--text-gray)' }}>{shift.time}</span>
-                    <span style={{ fontSize: '0.8125rem' }}>Allocated Workers Count: <strong>{shift.workersCount}</strong></span>
+                    <span style={{ fontSize: '0.8125rem' }}>Allocated Employees Count: <strong>{shift.workersCount}</strong></span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
                     <span className="status-badge" style={{ backgroundColor: shift.status === 'Active' ? 'var(--status-green)' : 'var(--border-gray)', fontSize: '1rem', padding: '4px 12px' }}>{shift.status}</span>
@@ -1076,7 +1076,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
                 type="text" 
                 className="input-field filter-field" 
                 style={{ width: '13.75rem', height: '2rem', marginBottom: 0, fontSize: '1rem', borderRadius: '0.625rem', border: '1px solid var(--border-gray)' }} 
-                placeholder="Search Worker..."
+                placeholder="Search Employee..."
                 value={reportSearch}
                 onChange={(e) => setReportSearch(e.target.value)}
               />
@@ -1098,7 +1098,7 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--text-black)' }}>
                   <th style={{ padding: '0.625rem' }}>ID</th>
-                  <th style={{ padding: '0.625rem' }}>Worker</th>
+                  <th style={{ padding: '0.625rem' }}>Employee</th>
                   <th style={{ padding: '0.625rem' }}>Nozzle</th>
                   <th style={{ padding: '0.625rem' }}>Fuel</th>
                   <th style={{ padding: '0.625rem' }}>Quantity</th>
@@ -1208,24 +1208,27 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
       
       <main className="dashboard-container" style={{ flexGrow: 1 }}>
         <div className="flex-between mb-20">
-          <div className="welcome-msg" style={{ marginBottom: 0 }}>
-            <div 
-              className="user-avatar" 
-              style={{ 
-                border: '2px solid var(--bp-blue)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontWeight: 700, 
-                color: 'var(--bp-navy)', 
-                fontSize: '1rem' 
-              }}
-            >
-              {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'SA'}
+          {activeTab === 'dashboard' ? (
+            <div className="welcome-msg" style={{ marginBottom: 0 }}>
+              <div 
+                className="user-avatar" 
+                style={{ 
+                  border: '2px solid var(--bp-blue)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontWeight: 700, 
+                  color: 'var(--bp-navy)', 
+                  fontSize: '1rem' 
+                }}
+              >
+                {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'SA'}
+              </div>
+              Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem' }}>{userSession?.name}</span>
             </div>
-            Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem' }}>{userSession?.name}</span>
-
-          </div>
+          ) : (
+            <h2 className="text-2xl font-bold capitalize" style={{ color: 'var(--bp-navy)' }}>{activeTab.replace('-', ' ')}</h2>
+          )}
           
           <button 
             onClick={handleExportCSV}

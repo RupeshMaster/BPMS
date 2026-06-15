@@ -99,9 +99,9 @@ export const getAttendance = async (req, res) => {
 };
 
 export const checkIn = async (req, res) => {
-  const { workerId, workerName } = req.body;
-  const today = new Date().toISOString().split('T')[0];
-  const timeString = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const { workerId, workerName, deviceDate, deviceTime, openingReading } = req.body;
+  const today = deviceDate || new Date().toISOString().split('T')[0];
+  const timeString = deviceTime || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   try {
     const log = {
       workerId,
@@ -109,6 +109,7 @@ export const checkIn = async (req, res) => {
       date: today,
       checkIn: timeString,
       checkOut: '',
+      openingReading: openingReading || 0,
       status: 'Active'
     };
 
@@ -120,8 +121,8 @@ export const checkIn = async (req, res) => {
 };
 
 export const checkOut = async (req, res) => {
-  const { workerId } = req.body;
-  const timeString = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const { workerId, deviceTime, closingReading } = req.body;
+  const timeString = deviceTime || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   try {
     const attendanceLogs = await DbWrapper.getAttendance();
     // Find ANY active check-in for this worker, even from a past date
@@ -134,6 +135,7 @@ export const checkOut = async (req, res) => {
     const log = {
       ...baseLog,
       checkOut: timeString,
+      closingReading: closingReading || 0,
       status: 'Inactive' // Marked off-duty
     };
 

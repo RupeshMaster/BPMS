@@ -76,7 +76,7 @@ export const Register = () => {
       return;
     }
     if (!imageFile) {
-      showToast('Worker Image is required.', 'error');
+      showToast('Employee Image is required.', 'error');
       return;
     }
 
@@ -98,7 +98,7 @@ export const Register = () => {
       setShowSuccessModal(true);
       showToast('Registration Successful!', 'success');
     } catch (err) {
-      const msg = err.response?.data?.message || 'Server error during worker registration.';
+      const msg = err.response?.data?.message || 'Server error during employee registration.';
       showToast(msg, 'error');
     }
   };
@@ -290,7 +290,7 @@ export const Register = () => {
             >
               <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--bp-blue)', marginBottom: '1.25rem' }}>Registration Successful!</div>
               <div style={{ fontSize: '1rem', marginBottom: '1.875rem', lineHeight: 1.6, textAlign: 'left' }}>
-                Welcome to Bharat Petroleum. Your worker registration details have been saved successfully.<br /><br />
+                Welcome to Bharat Petroleum. Your employee registration details have been saved successfully.<br /><br />
                 <div style={{ background: 'var(--bg-light-gray)', padding: '0.9375rem', borderRadius: '0.625rem', border: '1px solid var(--border-gray)' }}>
                   <strong>Login ID:</strong> <span style={{ color: 'var(--status-red-dark)', fontWeight: 700, fontSize: '1rem' }}>{generatedId}</span><br />
                   <strong>Default Password:</strong> <span style={{ color: 'var(--status-red-dark)', fontWeight: 700, fontSize: '1rem' }}>1234</span>
@@ -299,7 +299,7 @@ export const Register = () => {
               <button
                 onClick={() => {
                   setShowSuccessModal(false);
-                  navigate('/login');
+                  navigate('/login', { state: { prefillId: generatedId } });
                 }}
                 className="btn-primary"
                 style={{ width: '13.75rem', height: '2.75rem', fontSize: '1rem', borderRadius: '0.75rem', margin: '0 auto', textDecoration: 'none' }}

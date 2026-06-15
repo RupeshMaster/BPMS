@@ -34,6 +34,10 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
   const [testQuantity, setTestQuantity] = useState(0);
   const [salesPayment, setSalesPayment] = useState('Cash');
 
+  // CheckIn/Out form states
+  const [attendanceReading, setAttendanceReading] = useState('');
+  const [attendancePhoto, setAttendancePhoto] = useState(null);
+
   const selectedNozzle = nozzles[salesNozzle];
   const salesFuel = selectedNozzle ? selectedNozzle.fuel : 'Petrol';
   const salesRate = selectedNozzle ? (selectedNozzle.fuel === 'Petrol' ? 104.2 : 92.5) : 104.2;
@@ -91,14 +95,35 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
   };
 
   // Actions
-  const handleCheckInToggle = () => {
+  const handleCheckInToggle = (e) => {
+    e?.preventDefault();
+    const readingVal = parseFloat(attendanceReading) || 0;
+    
+    if (readingVal <= 0) {
+      showToast('Please enter a valid meter reading.', 'error');
+      return;
+    }
+    if (!attendancePhoto) {
+      showToast('Photo proof is required.', 'error');
+      return;
+    }
+
+    const dDate = new Date().toISOString().split('T')[0];
+    const dTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
     dispatch(toggleCheckInThunk({
       workerId: userSession.id,
       workerName: userSession.name,
-      isCheckedIn: stats.isCheckedIn
+      isCheckedIn: stats.isCheckedIn,
+      deviceDate: dDate,
+      deviceTime: dTime,
+      openingReading: !stats.isCheckedIn ? readingVal : undefined,
+      closingReading: stats.isCheckedIn ? readingVal : undefined
     })).then((res) => {
       if (!res.error) {
         showToast(stats.isCheckedIn ? 'Checked out successfully!' : 'Checked in successfully!');
+        setAttendanceReading('');
+        setAttendancePhoto(null);
       } else {
         showToast('Shift attendance action failed.', 'error');
       }
@@ -209,7 +234,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
           <div className="dashboard-card">
             <div className="dashboard-card-title">Total Days Worked</div>
             <div className="dashboard-card-value">{stats.daysVal}</div>
-            <div className="dashboard-card-subtext text-green">Registered worker log</div>
+            <div className="dashboard-card-subtext text-green">Registered employee log</div>
             <img src="/assets/shifts.png" alt="Shifts" className="card-icon-right" style={{ width: '2rem', height: '2rem', objectFit: 'contain' }} />
           </div>
 
@@ -236,7 +261,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
             </div>
 
             <div className="shift-info-card">
-              <span className="text-xl font-bold">Total Workers on Shift</span>
+              <span className="text-xl font-bold">Total Employees on Shift</span>
               <span className="text-xl font-bold">{activeShift.workersCount}</span>
             </div>
 
@@ -309,7 +334,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
                 <div className="flex-column">
                   <span className="text-xl font-bold">{shift.name}</span>
                   <span style={{ fontSize: '1rem', color: 'var(--text-gray)' }}>{shift.time}</span>
-                  <span style={{ fontSize: '0.8125rem', marginTop: '0.3125rem' }}>Workers allocated: <strong>{shift.workersCount}</strong></span>
+                  <span style={{ fontSize: '0.8125rem', marginTop: '0.3125rem' }}>Employees allocated: <strong>{shift.workersCount}</strong></span>
                 </div>
                 <div className="status-badge" style={{ backgroundColor: shift.status === 'Active' ? 'var(--status-green)' : 'var(--border-gray)', color: shift.status === 'Active' ? 'var(--text-black)' : 'var(--text-gray)' }}>
                   {shift.status}
@@ -520,7 +545,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
                     {isMine && <span style={{ fontSize: '0.75rem', color: 'var(--bp-blue)', fontWeight: 700 }}>★ Your Assigned Duty Nozzle</span>}
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <span style={{ fontSize: '1rem', color: 'var(--text-gray)' }}>Assigned Worker:</span><br />
+                    <span style={{ fontSize: '1rem', color: 'var(--text-gray)' }}>Assigned Employee:</span><br />
                     <span className="text-base font-bold">{nozzle.assignedWorker}</span>
                   </div>
                 </div>
@@ -542,46 +567,79 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
       >
         <div className="panel-card panel-card-up max-w-xl mx-auto text-center py-8 px-6 rounded-2xl p-12">
           <div className="panel-title text-xl font-bold">Shift Log In Console</div>
-          <div 
-            style={{ 
-              fontSize: '1rem', 
-              marginBottom: '1rem', 
-              lineHeight: 1.6, 
-              background: 'var(--bg-light-gray)', 
-              padding: '1.5rem', 
-              borderRadius: '0.75rem', 
-              border: '1px solid var(--border-gray)' 
-            }}
-          >
-            {stats.isCheckedIn ? (
-              <>
-                Status: <strong style={{ color: 'var(--status-green-dark)', fontSize: '1rem' }}>ON DUTY</strong><br /><br />
-                Checked In At: <strong>{stats.checkInTime}</strong><br />
-                Date: <strong>{stats.checkInDate}</strong><br />
-                Assigned Nozzle: <strong>Nozzle {userSession?.nozzle || 'A'}</strong>
-              </>
-            ) : (
-              <>
-                Status: <strong style={{ color: 'var(--status-red-dark)', fontSize: '1rem' }}>OFF DUTY</strong><br /><br />
-                Click check-in to begin logging shift metrics, update nozzle readings, and record attendance.
-              </>
-            )}
-          </div>
-          <button 
-            onClick={handleCheckInToggle}
-            className="btn-primary" 
-            style={{ 
-              width: '17.5rem', 
-              height: '5rem', 
-              fontSize: '1.75rem', 
-              borderRadius: '0.75rem', 
-              margin: '0 auto',
-              backgroundColor: stats.isCheckedIn ? 'var(--status-red-dark)' : 'var(--bp-blue)',
-              color: stats.isCheckedIn ? '#fff' : 'var(--bp-yellow)'
-            }}
-          >
-            {stats.isCheckedIn ? 'Check Out' : 'Check In'}
-          </button>
+          <form onSubmit={handleCheckInToggle} className="flex flex-col gap-6">
+            <div 
+              style={{ 
+                fontSize: '1rem', 
+                marginBottom: '1rem', 
+                lineHeight: 1.6, 
+                background: 'var(--bg-light-gray)', 
+                padding: '1.5rem', 
+                borderRadius: '0.75rem', 
+                border: '1px solid var(--border-gray)' 
+              }}
+            >
+              {stats.isCheckedIn ? (
+                <>
+                  Status: <strong style={{ color: 'var(--status-green-dark)', fontSize: '1rem' }}>ON DUTY</strong><br /><br />
+                  Checked In At: <strong>{stats.checkInTime}</strong><br />
+                  Date: <strong>{stats.checkInDate}</strong><br />
+                  Assigned Nozzle: <strong>Nozzle {userSession?.nozzle || 'A'}</strong>
+                </>
+              ) : (
+                <>
+                  Status: <strong style={{ color: 'var(--status-red-dark)', fontSize: '1rem' }}>OFF DUTY</strong><br /><br />
+                  Fill the form to begin logging shift metrics, update nozzle readings, and record attendance.
+                </>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 gap-4 text-left">
+              <div>
+                <label className="font-bold block text-base pl-2 mb-2">
+                  {stats.isCheckedIn ? 'Closing Reading (Meter)' : 'Opening Reading (Meter)'}
+                </label>
+                <input 
+                  type="number" 
+                  className="input-field w-full h-12 text-base" 
+                  placeholder="Enter current meter reading" 
+                  min="0" 
+                  step="0.01" 
+                  value={attendanceReading}
+                  onChange={(e) => setAttendanceReading(e.target.value)}
+                  required 
+                />
+              </div>
+              <div>
+                <label className="font-bold block text-base pl-2 mb-2">
+                  Photo Proof (Machine Reading / Live Photo)
+                </label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  className="input-field w-full h-12 text-base pt-2" 
+                  onChange={(e) => setAttendancePhoto(e.target.files[0])}
+                  required 
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit"
+              className="btn-primary" 
+              style={{ 
+                width: '17.5rem', 
+                height: '5rem', 
+                fontSize: '1.75rem', 
+                borderRadius: '0.75rem', 
+                margin: '1.5rem auto 0 auto',
+                backgroundColor: stats.isCheckedIn ? 'var(--status-red-dark)' : 'var(--bp-blue)',
+                color: stats.isCheckedIn ? '#fff' : 'var(--bp-yellow)'
+              }}
+            >
+              {stats.isCheckedIn ? 'Check Out' : 'Check In'}
+            </button>
+          </form>
         </div>
       </motion.div>
     );
@@ -599,7 +657,7 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
           <div className="panel-title">My Account Settings</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', fontSize: '1rem' }}>
             <div style={{ borderBottom: '1px solid var(--border-gray)', paddingBottom: '0.9375rem' }}>
-              <strong>Worker ID:</strong> <span style={{ color: 'var(--text-gray)' }}>{userSession?.id}</span>
+              <strong>Employee ID:</strong> <span style={{ color: 'var(--text-gray)' }}>{userSession?.id}</span>
             </div>
             <div style={{ borderBottom: '1px solid var(--border-gray)', paddingBottom: '0.9375rem' }}>
               <strong>Full Name:</strong> <span>{workerDetails.name || userSession?.name}</span>
@@ -677,24 +735,28 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
       
       <main className="dashboard-container" style={{ flexGrow: 1 }}>
         <div className="flex-between mb-20">
-          <div className="welcome-msg" style={{ marginBottom: 0 }}>
-            <div 
-              className="user-avatar" 
-              style={{ 
-                border: '2px solid var(--bp-blue)', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center', 
-                fontWeight: 700, 
-                color: 'var(--bp-navy)', 
-                fontSize: '1rem' 
-              }}
-            >
-              {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'WK'}
+          {activeTab === 'dashboard' ? (
+            <div className="welcome-msg" style={{ marginBottom: 0 }}>
+              <div 
+                className="user-avatar" 
+                style={{ 
+                  border: '2px solid var(--bp-blue)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontWeight: 700, 
+                  color: 'var(--bp-navy)', 
+                  fontSize: '1rem' 
+                }}
+              >
+                {userSession?.name?.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) || 'WK'}
+              </div>
+              Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem', marginRight: '0.625rem' }}>{userSession?.name}</span> 
+              <img src="/assets/greeting.png" alt="Waving Hand" className="greeting-icon" style={{ width: '2.5rem', height: '2.5rem', objectFit: 'contain' }} />
             </div>
-            Welcome <span style={{ fontWeight: 700, marginLeft: '0.625rem', marginRight: '0.625rem' }}>{userSession?.name}</span> 
-            <img src="/assets/greeting.png" alt="Waving Hand" className="greeting-icon" style={{ width: '2.5rem', height: '2.5rem', objectFit: 'contain' }} />
-          </div>
+          ) : (
+            <h2 className="text-2xl font-bold capitalize" style={{ color: 'var(--bp-navy)' }}>{activeTab.replace('-', ' ')}</h2>
+          )}
           
           {activeTab === 'dashboard' && (
             <button 

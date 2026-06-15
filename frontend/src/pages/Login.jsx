@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,6 +18,8 @@ const loginSchema = z.object({
 
 export const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefillId = location.state?.prefillId || '';
   const dispatch = useDispatch();
   const { showToast } = useToast();
   
@@ -27,7 +29,7 @@ export const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      userId: '',
+      userId: prefillId,
       password: '',
       nozzle: ''
     }
@@ -44,7 +46,7 @@ export const Login = () => {
       
       const sessionData = {
         ...user,
-        nozzle: noz || user.nozzle || 'A' // Default to Nozzle A if worker
+        nozzle: noz || user.nozzle || 'A' // Default to Nozzle A if employee
       };
 
       dispatch(loginSession({ user: sessionData, token }));
@@ -123,9 +125,11 @@ export const Login = () => {
               style={{ width: '100%', marginBottom: '1.875rem' }}
               {...register('nozzle')}
             >
-              <option value="">Select Nozzle (Workers Only)</option>
+              <option value="">Select Nozzle (Employees Only)</option>
               <option value="A">Nozzle A (Petrol)</option>
-              <option value="B">Nozzle B (Diesel)</option>
+              <option value="B">Nozzle B (Petrol)</option>
+              <option value="C">Nozzle C (Diesel)</option>
+              <option value="D">Nozzle D (Diesel)</option>
             </select>
           </div>
 
@@ -157,7 +161,7 @@ export const Login = () => {
               className="forgot-pwd" 
               onClick={(e) => {
                 e.preventDefault();
-                alert('Password recovery is not configured. Use demo credentials or register a new worker.');
+                alert('Password recovery is not configured. Use demo credentials or register a new employee.');
               }}
               style={{ fontSize: '1rem', color: 'var(--bp-navy-dark)', textDecoration: 'none' }}
             >
@@ -204,7 +208,7 @@ export const Login = () => {
               className="btn-primary"
               style={{ width: '8.75rem', height: '2rem', fontSize: '1rem', padding: '0', backgroundColor: 'var(--status-green-dark)', color: '#fff' }}
             >
-              Worker
+              Employee
             </button>
           </div>
         </motion.div>

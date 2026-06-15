@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 export const Sidebar = ({ userSession, activeTab, setActiveTab, onLogout, isOpen, onClose }) => {
   const isWorker = userSession?.role === 'worker';
-  const roleName = isWorker ? 'Worker' : userSession?.role === 'super-admin' ? 'Super Admin' : 'Admin';
+  const roleName = isWorker ? 'Employee' : userSession?.role === 'super-admin' ? 'Super Admin' : 'Admin';
   
   const handleLogoutClick = () => {
     if (window.confirm('Are you sure you want to log out?')) {
@@ -34,7 +34,7 @@ export const Sidebar = ({ userSession, activeTab, setActiveTab, onLogout, isOpen
     { id: 'dashboard', label: t('dashboard'), icon: '/assets/dashboard.png' },
     { id: 'fuel', label: t('fuel_management'), icon: '/assets/nozzles.png' },
     { id: 'nozzles', label: t('nozzle_management'), icon: '/assets/nozzles.png' },
-    { id: 'workers', label: t('workers'), icon: '/assets/avatar.png' },
+    { id: 'workers', label: t('employees', 'Employees'), icon: '/assets/avatar.png' },
     { id: 'entries', label: t('daily_entries'), icon: '/assets/attendance.png' },
     { id: 'shifts', label: t('shifts'), icon: '/assets/shifts.png' },
     { id: 'expenses', label: t('expenses'), icon: '/assets/sales.png' },
