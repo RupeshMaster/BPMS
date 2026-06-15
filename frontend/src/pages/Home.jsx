@@ -46,7 +46,7 @@ export const Home = ({ userSession }) => {
             className="hero-subtitle text-white/90 text-lg md:text-[28px] font-light max-w-[42rem] md:max-w-[60rem] leading-[1.6]"
             style={{ marginBottom: '35px' }}
           >
-            The official centralized portal for BPCL Station Managers, Administrators, and Workers to streamline daily operations, track inventory, and generate instant reports.
+            The official centralized portal for BPCL Station Managers, Administrators, and Employees to streamline daily operations, track inventory, and generate instant reports.
           </motion.p>
 
           <motion.div
@@ -64,7 +64,7 @@ export const Home = ({ userSession }) => {
                 onClick={handleSecondaryAction}
                 className="btn-primary btn-large shadow-lg"
               >
-                New Worker Registration
+                New Employee Registration
               </button>
             )}
           </motion.div>
