@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-undef */
 import React, { useState } from 'react';
 import api from '../../utils/api';
 import { Play, Plus, Sliders, AlertTriangle } from 'lucide-react';

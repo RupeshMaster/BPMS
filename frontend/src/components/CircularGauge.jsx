@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 export const CircularGauge = ({ percentage, color = '#127ec3' }) => {
   // SVG Arc Configuration for a clean circular progress indicator

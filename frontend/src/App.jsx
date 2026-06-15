@@ -3,12 +3,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useSelector, useDispatch } from 'react-redux';
 import { logoutSession } from './store/sessionSlice';
 import { Navbar } from './components/Navbar';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import WorkerDashboard from './pages/WorkerDashboard';
-import AdminDashboard from './pages/AdminDashboard';
-import SuperAdminDashboard from './pages/SuperAdminDashboard';
+const Home = React.lazy(() => import('./pages/Home'));
+const Login = React.lazy(() => import('./pages/Login'));
+const Register = React.lazy(() => import('./pages/Register'));
+const WorkerDashboard = React.lazy(() => import('./pages/WorkerDashboard'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const SuperAdminDashboard = React.lazy(() => import('./pages/SuperAdminDashboard'));
 
 // Protective Route Middleware
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -57,77 +57,79 @@ export default function App() {
 
         {/* Dashboard and Tab Contents */}
         <div className="flex-grow relative page-content">
-          <Routes>
-            <Route path="/" element={<Home userSession={userSession} />} />
-            
-            <Route 
-              path="/login" 
-              element={
-                userSession ? (
-                  <Navigate to={`/${userSession.role}`} replace />
-                ) : (
-                  <Login />
-                )
-              } 
-            />
-            
-            <Route 
-              path="/register" 
-              element={
-                userSession ? (
-                  <Navigate to={`/${userSession.role}`} replace />
-                ) : (
-                  <Register />
-                )
-              } 
-            />
+          <React.Suspense fallback={<div className="flex justify-center items-center h-full w-full py-20"><div className="text-2xl font-bold text-slate-500">Loading...</div></div>}>
+            <Routes>
+              <Route path="/" element={<Home userSession={userSession} />} />
+              
+              <Route 
+                path="/login" 
+                element={
+                  userSession ? (
+                    <Navigate to={`/${userSession.role}`} replace />
+                  ) : (
+                    <Login />
+                  )
+                } 
+              />
+              
+              <Route 
+                path="/register" 
+                element={
+                  userSession ? (
+                    <Navigate to={`/${userSession.role}`} replace />
+                  ) : (
+                    <Register />
+                  )
+                } 
+              />
 
-            {/* Protected Role-Based Routers */}
-            <Route 
-              path="/worker" 
-              element={
-                <ProtectedRoute allowedRoles={['worker']}>
-                  <WorkerDashboard 
-                    userSession={userSession} 
-                    onLogout={handleLogout} 
-                    isSidebarOpen={isSidebarOpen} 
-                    setIsSidebarOpen={setIsSidebarOpen} 
-                  />
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AdminDashboard 
-                    userSession={userSession} 
-                    onLogout={handleLogout} 
-                    isSidebarOpen={isSidebarOpen} 
-                    setIsSidebarOpen={setIsSidebarOpen} 
-                  />
-                </ProtectedRoute>
-              } 
-            />
+              {/* Protected Role-Based Routers */}
+              <Route 
+                path="/worker" 
+                element={
+                  <ProtectedRoute allowedRoles={['worker']}>
+                    <WorkerDashboard 
+                      userSession={userSession} 
+                      onLogout={handleLogout} 
+                      isSidebarOpen={isSidebarOpen} 
+                      setIsSidebarOpen={setIsSidebarOpen} 
+                    />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AdminDashboard 
+                      userSession={userSession} 
+                      onLogout={handleLogout} 
+                      isSidebarOpen={isSidebarOpen} 
+                      setIsSidebarOpen={setIsSidebarOpen} 
+                    />
+                  </ProtectedRoute>
+                } 
+              />
 
-            <Route 
-              path="/super-admin" 
-              element={
-                <ProtectedRoute allowedRoles={['super-admin']}>
-                  <SuperAdminDashboard 
-                    userSession={userSession} 
-                    onLogout={handleLogout} 
-                    isSidebarOpen={isSidebarOpen} 
-                    setIsSidebarOpen={setIsSidebarOpen} 
-                  />
-                </ProtectedRoute>
-              } 
-            />
+              <Route 
+                path="/super-admin" 
+                element={
+                  <ProtectedRoute allowedRoles={['super-admin']}>
+                    <SuperAdminDashboard 
+                      userSession={userSession} 
+                      onLogout={handleLogout} 
+                      isSidebarOpen={isSidebarOpen} 
+                      setIsSidebarOpen={setIsSidebarOpen} 
+                    />
+                  </ProtectedRoute>
+                } 
+              />
 
-            {/* Default Catch-all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+              {/* Default Catch-all */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </React.Suspense>
         </div>
       </div>
     </Router>

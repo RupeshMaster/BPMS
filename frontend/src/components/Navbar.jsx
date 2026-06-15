@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './Toast';
 
-export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }) => {
+export const Navbar = ({ userSession, isSidebarOpen, onToggleSidebar }) => {
   const navigate = useNavigate();
-  const location = useLocation();
+
   const { showToast } = useToast();
   const { i18n } = useTranslation();
 
@@ -15,7 +15,7 @@ export const Navbar = ({ userSession, onLogout, isSidebarOpen, onToggleSidebar }
     showToast(`Language switched to ${nextLang === 'en' ? 'English' : 'हिन्दी (Hindi)'}`);
   };
 
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
 
   return (
     <nav className="navbar flex items-center justify-between h-[5.375rem] w-full border-b border-black bg-white px-6 md:px-10 relative z-40">

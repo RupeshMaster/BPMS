@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from '../components/Sidebar';
@@ -14,7 +14,6 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
   const dispatch = useDispatch();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [weather, setWeather] = useState(null);
   
   // Select data from Redux Store
   const shifts = useSelector((state) => state.data.shifts);
@@ -29,39 +28,28 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
   const checkinsCount = myLogs.length;
   const activeLog = myLogs.find(log => log.status === 'Active');
 
-  // Stats State
-  const [stats, setStats] = useState({
-    attendanceVal: '0/30',
-    daysVal: '250/365',
-    salesToday: '₹0',
-    isCheckedIn: false,
-    checkInTime: '',
-    checkInDate: '',
-    totalLiters: 0,
-    totalAmount: 0,
-    cashCollected: 0,
-    digitalAmount: 0
-  });
-
-  // Sales Form states
   const [salesNozzle, setSalesNozzle] = useState('A');
-  const [salesFuel, setSalesFuel] = useState('Petrol');
-  const [salesRate, setSalesRate] = useState(104.2);
-  const [salesLiters, setSalesLiters] = useState(0);
   const [openingReading, setOpeningReading] = useState(0);
   const [closingReading, setClosingReading] = useState(0);
   const [testQuantity, setTestQuantity] = useState(0);
-  const [salesEstAmount, setSalesEstAmount] = useState(0);
   const [salesPayment, setSalesPayment] = useState('Cash');
 
-  // Sync opening reading when nozzle changes
-  useEffect(() => {
+  const selectedNozzle = nozzles[salesNozzle];
+  const salesFuel = selectedNozzle ? selectedNozzle.fuel : 'Petrol';
+  const salesRate = selectedNozzle ? (selectedNozzle.fuel === 'Petrol' ? 104.2 : 92.5) : 104.2;
+
+  const salesLiters = Math.max(0, (parseFloat(closingReading) || 0) - (parseFloat(openingReading) || 0) - (parseFloat(testQuantity) || 0));
+  const salesEstAmount = salesLiters * salesRate;
+
+  const [prevSalesNozzle, setPrevSalesNozzle] = useState('A');
+  if (salesNozzle !== prevSalesNozzle) {
+    setPrevSalesNozzle(salesNozzle);
     if (nozzles[salesNozzle]) {
       setOpeningReading(nozzles[salesNozzle].reading || 0);
       setClosingReading(nozzles[salesNozzle].reading || 0);
       setTestQuantity(0);
     }
-  }, [salesNozzle, nozzles]);
+  }
 
   // Load backend data on mount and poll every 10 seconds for real-time admin changes
   useEffect(() => {
@@ -74,53 +62,33 @@ export const WorkerDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSid
     return () => clearInterval(intervalId);
   }, [dispatch]);
 
-  // Load / recalculate stats whenever sales, attendance or user changes
-  useEffect(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const todaySales = sales.filter(s => s.workerId === userSession?.id && s.date.startsWith(today));
-    
-    let totalLiters = 0;
-    let totalAmount = 0;
-    let cashCollected = 0;
-    let digitalAmount = 0;
+  const today = new Date().toISOString().split('T')[0];
+  const todaySales = sales.filter(s => s.workerId === userSession?.id && s.date.startsWith(today));
+  
+  let totalLiters = 0;
+  let totalAmount = 0;
+  let cashCollected = 0;
+  let digitalAmount = 0;
 
-    todaySales.forEach(s => {
-      totalLiters += s.liters;
-      totalAmount += s.amount;
-      cashCollected += s.cash || 0;
-      digitalAmount += s.digital || 0;
-    });
+  todaySales.forEach(s => {
+    totalLiters += s.liters;
+    totalAmount += s.amount;
+    cashCollected += s.cash || 0;
+    digitalAmount += s.digital || 0;
+  });
 
-    setStats({
-      attendanceVal: `${checkinsCount}/30`,
-      daysVal: `${250 + checkinsCount}/365`,
-      salesToday: `₹${totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-      isCheckedIn: !!activeLog,
-      checkInTime: activeLog?.checkIn || '',
-      checkInDate: activeLog?.date || '',
-      totalLiters,
-      totalAmount,
-      cashCollected,
-      digitalAmount
-    });
-  }, [sales, allAttendance, userSession?.id, checkinsCount, activeLog]);
-
-  // Handle sales nozzle change rate
-  useEffect(() => {
-    const selected = nozzles[salesNozzle];
-    if (selected) {
-      setSalesFuel(selected.fuel);
-      setSalesRate(selected.fuel === 'Petrol' ? 104.2 : 92.5);
-    }
-  }, [salesNozzle, nozzles]);
-
-  // Handle sales estimation amount
-  // Auto-calculate liters and amount
-  useEffect(() => {
-    const calculatedLiters = Math.max(0, (parseFloat(closingReading) || 0) - (parseFloat(openingReading) || 0) - (parseFloat(testQuantity) || 0));
-    setSalesLiters(calculatedLiters);
-    setSalesEstAmount(calculatedLiters * salesRate);
-  }, [openingReading, closingReading, testQuantity, salesRate]);
+  const stats = {
+    attendanceVal: `${checkinsCount}/30`,
+    daysVal: `${250 + checkinsCount}/365`,
+    salesToday: `₹${totalAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+    isCheckedIn: !!activeLog,
+    checkInTime: activeLog?.checkIn || '',
+    checkInDate: activeLog?.date || '',
+    totalLiters,
+    totalAmount,
+    cashCollected,
+    digitalAmount
+  };
 
   // Actions
   const handleCheckInToggle = () => {

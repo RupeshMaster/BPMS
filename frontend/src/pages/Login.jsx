@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,7 +22,7 @@ export const Login = () => {
   const { showToast } = useToast();
   
   const [errorMsg, setErrorMsg] = useState('');
-  const [lang, setLang] = useState('English');
+
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(loginSchema),
@@ -33,11 +33,7 @@ export const Login = () => {
     }
   });
 
-  const handleLanguageToggle = () => {
-    const nextLang = lang === 'English' ? 'हिन्दी (Hindi)' : 'English';
-    setLang(nextLang);
-    showToast(`Language switched to ${nextLang}`);
-  };
+
 
   const loginAsUser = async (id, pass, noz) => {
     setErrorMsg('');

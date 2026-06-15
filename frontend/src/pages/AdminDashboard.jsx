@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -71,13 +71,6 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
     dispatch(fetchInitialData());
   }, [dispatch]);
 
-  // Initialize form default values
-  useEffect(() => {
-    const workersList = Object.keys(users).filter(k => users[k].role === 'worker');
-    if (workersList.length > 0 && !allocateWorkerId) {
-      setAllocateWorkerId(users[workersList[0]].id);
-    }
-  }, [users, allocateWorkerId]);
 
   // Calculations for stats & charts
   let totalRevenue = 0;
@@ -165,7 +158,9 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
 
   const handleAllocateNozzle = (e) => {
     e.preventDefault();
-    const userToAssign = users[allocateWorkerId];
+    const workersList = Object.keys(users).filter(k => users[k].role === 'worker');
+    const derivedAllocateWorkerId = allocateWorkerId || (workersList.length > 0 ? users[workersList[0]].id : '');
+    const userToAssign = users[derivedAllocateWorkerId];
 
     if (nozzles[allocateNozzleId] && userToAssign) {
       dispatch(allocateNozzleThunk({
@@ -365,7 +360,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
         }));
         
         showToast(`Added ${val}L to generator fuel reserves.`);
-      }).catch(err => {
+      }).catch(() => {
         showToast('Error updating primary stocks.', 'error');
       });
     } else {
@@ -689,7 +684,7 @@ export const AdminDashboard = ({ userSession, onLogout, isSidebarOpen, setIsSide
                 <select 
                   className="input-field" 
                   style={{ width: '100%', height: '2.75rem', marginBottom: 0 }} 
-                  value={allocateWorkerId}
+                  value={allocateWorkerId || (workersList.length > 0 ? users[workersList[0]].id : '')}
                   onChange={(e) => setAllocateWorkerId(e.target.value)}
                   required
                 >

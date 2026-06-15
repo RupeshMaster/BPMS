@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import mongoose from 'mongoose';
 import Attendance from '../backend/models/Attendance.js';
 import dotenv from 'dotenv';

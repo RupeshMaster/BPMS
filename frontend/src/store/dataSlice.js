@@ -102,7 +102,7 @@ export const allocateNozzleThunk = createAsyncThunk(
   'data/allocateNozzleThunk',
   async ({ nozzleId, workerId, workerName }, { rejectWithValue }) => {
     try {
-      const res = await api.post('/nozzles/allocate', { nozzleId, workerId });
+      await api.post('/nozzles/allocate', { nozzleId, workerId });
       return { nozzleId, workerId, workerName };
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);

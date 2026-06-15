@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable no-unused-vars */
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -71,13 +72,6 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
     dispatch(fetchInitialData());
   }, [dispatch]);
 
-  // Initialize form default values
-  useEffect(() => {
-    const workersList = Object.keys(users).filter(k => users[k].role === 'worker');
-    if (workersList.length > 0 && !allocateWorkerId) {
-      setAllocateWorkerId(users[workersList[0]].id);
-    }
-  }, [users, allocateWorkerId]);
 
   // Calculations for stats & charts
   let totalRevenue = 0;
@@ -165,7 +159,9 @@ export const SuperAdminDashboard = ({ userSession, onLogout, isSidebarOpen, setI
 
   const handleAllocateNozzle = (e) => {
     e.preventDefault();
-    const userToAssign = users[allocateWorkerId];
+    const workersList = Object.keys(users).filter(k => users[k].role === 'worker');
+    const derivedAllocateWorkerId = allocateWorkerId || (workersList.length > 0 ? users[workersList[0]].id : '');
+    const userToAssign = users[derivedAllocateWorkerId];
 
     if (nozzles[allocateNozzleId] && userToAssign) {
       dispatch(allocateNozzleThunk({

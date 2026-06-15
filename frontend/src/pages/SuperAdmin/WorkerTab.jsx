@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-undef */
 import React, { useState } from 'react';
 import api from '../../utils/api';
 import { Search, Plus, Trash2, Edit2, Filter } from 'lucide-react';

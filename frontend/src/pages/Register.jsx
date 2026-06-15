@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,7 @@ import api from '../utils/api';
 // Define Zod registration schema
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').trim(),
-  phone: z.string().min(10, 'Phone must be at least 10 digits').regex(/^\+?[0-9\s\-]+$/, 'Invalid phone number'),
+  phone: z.string().min(10, 'Phone must be at least 10 digits').regex(/^\+?[0-9\s-]+$/, 'Invalid phone number'),
   dob: z.string().min(1, 'Date of birth is required'),
   address: z.string().min(5, 'Address must be at least 5 characters').trim(),
 });
@@ -25,7 +25,7 @@ export const Register = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const [lang, setLang] = useState('English');
+
 
   // File states
   const [aadharFile, setAadharFile] = useState(null);
@@ -51,11 +51,7 @@ export const Register = () => {
     }
   });
 
-  const handleLanguageToggle = () => {
-    const nextLang = lang === 'English' ? 'हिन्दी (Hindi)' : 'English';
-    setLang(nextLang);
-    showToast(`Language switched to ${nextLang}`);
-  };
+
 
   const handleFileChange = (e, fileType) => {
     if (e.target.files.length > 0) {
@@ -89,7 +85,7 @@ export const Register = () => {
 
     try {
       // Call backend auth registration endpoint
-      const response = await api.post('/auth/register', {
+      await api.post('/auth/register', {
         id,
         name: data.name,
         phone: data.phone,

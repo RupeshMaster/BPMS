@@ -5,7 +5,7 @@ const getInitialSession = () => {
   if (localUser) {
     try {
       return JSON.parse(localUser);
-    } catch (e) {
+    } catch {
       localStorage.removeItem('bp_user');
       localStorage.removeItem('bp_token');
     }

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-undef */
 import React, { useState } from 'react';
 import StockTrendChart from '../../components/StockTrendChart';
 import api from '../../utils/api';

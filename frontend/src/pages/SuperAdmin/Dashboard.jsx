@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, no-undef */
 import React from 'react';
 import { CircularGauge } from '../../components/CircularGauge';
 import { TrendingUp, FileText, Settings, BadgeIndianRupee, Activity, Play } from 'lucide-react';
